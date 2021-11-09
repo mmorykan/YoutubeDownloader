@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QDialog
-from info_dialog import Ui_InfoDialog
+from dialogs.info_dialog import Ui_InfoDialog
 
 
 class Info(QDialog, Ui_InfoDialog):

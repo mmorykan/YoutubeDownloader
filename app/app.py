@@ -5,10 +5,10 @@ from PyQt5.QtGui import QIcon
 from darktheme.widget_template import DarkPalette
 import resources
 
-from converter_main_dialog import Ui_MainWindow
+from dialogs.converter_main_dialog import Ui_MainWindow
+from progress_bar import ProgessBarDialog
+from file_exists import FileExists
 from downloader import YoutubeDownloader
-from progress_bar_dialog import ProgessBarDialog
-from file_exists_dialog import FileExists
 from url_needed import URLNeeded
 from info import Info
 import validators

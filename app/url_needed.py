@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QDialog
-from url_needed_dialog import Ui_Dialog
+from dialogs.url_needed_dialog import Ui_Dialog
 
 
 class URLNeeded(QDialog, Ui_Dialog):
