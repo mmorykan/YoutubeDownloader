@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="icons">
+    <file alias="info.jpg">info_button.jpg</file>
+  </qresource>
+</RCC>
