@@ -21,7 +21,6 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
     def connectSignalsSlots(self):
         self.progress_updater.progress.connect(self.update_progress_bar)
         self.progress_updater.done.connect(self.finished)
-        self.progress_updater.done.connect(self.thread.quit)
         self.progress_updater.moveToThread(self.thread)
         self.thread.started.connect(self.progress_updater.download)
         self.SuccessButton.clicked.connect(self.close)        
@@ -40,6 +39,8 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
 
     def finished(self):
         self.SuccessButton.setEnabled(True)
+        self.thread.quit()
+        self.thread.wait()
 
     def reset(self):
         self.ProgressLabel.setText('')
