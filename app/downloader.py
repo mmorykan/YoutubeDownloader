@@ -5,13 +5,16 @@ from pydub import AudioSegment
 
 class MyLogger(object):
     def debug(self, msg):
-        print('debug', msg)
+        # print('debug', msg)
+        pass
 
     def warning(self, msg):
-        print('warning', msg)
+        # print('warning', msg)
+        pass
 
     def error(self, msg):
-        print('error', msg)
+        # print('error', msg)
+        pass
 
 
 class YoutubeDownloader():
@@ -25,13 +28,14 @@ class YoutubeDownloader():
             'cachedir': False,
         }
 
-    # Must run youtube-dl --rm-cache-dir when 403 error
+    # Must run youtube-dl --rm-cache-dir when 403 error or ydl.cache.remove() in python
     def download(self, data):
 
         self.ydl_opts['format'] = data['format']
         self.ydl_opts['outtmpl'] = data['full_path']
 
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            ydl.cache.remove()
             ydl.download([data['url']])
 
         self.__trim_audio(data)
@@ -40,7 +44,6 @@ class YoutubeDownloader():
     def get_info(url):
         with youtube_dl.YoutubeDL({'nocheckcertificate': True}) as ydl:
             meta = ydl.extract_info(url, download=False)
-            print(meta)
         return {
             'formats': {format['ext'] for format in meta['formats']}, 
             'title': meta['title'], 
@@ -51,17 +54,15 @@ class YoutubeDownloader():
         start, end = data['start_time'], data['end_time']
         audio = AudioSegment.from_file(self.ydl_opts['outtmpl'], self.ydl_opts['format'])
         if start and end:
-            print('slicing both')
             start_time = (start.tm_min * 60 + start.tm_sec) * 1000
             end_time = (end.tm_min * 60 + end.tm_sec) * 1000
             audio = audio[start_time:end_time]
         elif start:
-            print('slicing start')
             start_time = (start.tm_min * 60 + start.tm_sec) * 1000
             audio = audio[start_time:]
         elif end:
-            print('slicinge end')
             end_time = (end.tm_min * 60 + end.tm_sec) * 1000
             audio = audio[:end_time]
         audio.export(self.ydl_opts['outtmpl'], tags={'title': data['title'], 'artist': data['artist'], 'genre': data['genre']})
         # audio.export('test.m4a', tags={'title': data['title'], 'artist': data['artist'], 'genre': data['genre']})
+ 

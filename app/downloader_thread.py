@@ -18,7 +18,6 @@ class DownloadProgressThread(QThread):
         self.downloader.download(self.song_data)
 
     def progress_bar(self, song):
-        print(song)
         if song['status'] != 'finished':
             self.progress.emit(float(song['_percent_str'][:-1]), song['_eta_str'], song['_speed_str'], song['_total_bytes_str'])
         else:
