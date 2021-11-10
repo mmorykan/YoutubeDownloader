@@ -4,3 +4,6 @@ temp.py
 test.py
 output.txt
 __pycache__/
+build/
+dist/
+*.spec
