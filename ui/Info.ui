@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
-    <height>300</height>
+    <width>648</width>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,68 +18,79 @@
     <rect>
      <x>20</x>
      <y>30</y>
-     <width>608</width>
-     <height>241</height>
+     <width>611</width>
+     <height>277</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLabel" name="URLLabel">
-      <property name="text">
-       <string>URL: Link to the Youtube video. Only required piece of information</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-     </widget>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="URLLabel">
+        <property name="text">
+         <string>URL: Link to the Youtube video. Only required piece of information</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="MetaLabel">
+        <property name="text">
+         <string>Title, Artist, Genre: Optional metadata can be added to the downloaded file</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="TrimLabel">
+        <property name="text">
+         <string>Start time, End time: Optional times used to trim the audio's beginning and end</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="FolderLabel">
+        <property name="text">
+         <string>Choose Folder: If no folder is chosen, defaults to home directory. Saves chosen folder each time</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="FilenameLabel">
+        <property name="text">
+         <string>Filename: If no filename is entered, default is the title of the Youtube video. Do not enter the extension</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="FormatLabel">
+        <property name="text">
+         <string>List Formats: Lists the available formats of the downloaded video. Default is .m4a</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
-    <item>
-     <widget class="QLabel" name="MetaLabel">
+    <item row="1" column="0">
+     <widget class="QPushButton" name="CloseButton">
       <property name="text">
-       <string>Title, Artist, Genre: Optional metadata can be added to the downloaded file</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="TrimLabel">
-      <property name="text">
-       <string>Start time, End time: Amount of seconds from beginning and end to trim the audio file</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="FolderLabel">
-      <property name="text">
-       <string>Choose Folder: If no folder is chosen, defaults to home directory. Saves chosen folder each time</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="FilenameLabel">
-      <property name="text">
-       <string>Filename: If no filename is entered, default is the title of the Youtube video. Do not enter the extension</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="FormatLabel">
-      <property name="text">
-       <string>List Formats: Lists the available formats of the downloaded video. Default is .m4a</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
+       <string>Close</string>
       </property>
      </widget>
     </item>

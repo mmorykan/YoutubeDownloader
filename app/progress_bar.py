@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QThread
-from dialogs.progress_bar_dialog import Ui_Dialog
+from dialogs.progress_bar_dialog import Ui_ProgressBarDialog
 from downloader_thread import DownloadProgressThread
 
 
-class ProgessBarDialog(QDialog, Ui_Dialog):
+class ProgessBar(QDialog, Ui_ProgressBarDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)

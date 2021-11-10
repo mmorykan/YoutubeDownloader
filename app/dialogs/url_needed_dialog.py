@@ -11,11 +11,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(400, 106)
-        self.layoutWidget = QtWidgets.QWidget(Dialog)
+class Ui_URLNeeded(object):
+    def setupUi(self, URLNeeded):
+        URLNeeded.setObjectName("URLNeeded")
+        URLNeeded.resize(400, 106)
+        self.layoutWidget = QtWidgets.QWidget(URLNeeded)
         self.layoutWidget.setGeometry(QtCore.QRect(90, 20, 221, 71))
         self.layoutWidget.setObjectName("layoutWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.layoutWidget)
@@ -29,11 +29,11 @@ class Ui_Dialog(object):
         self.CloseButton.setObjectName("CloseButton")
         self.gridLayout.addWidget(self.CloseButton, 1, 0, 1, 1)
 
-        self.retranslateUi(Dialog)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+        self.retranslateUi(URLNeeded)
+        QtCore.QMetaObject.connectSlotsByName(URLNeeded)
 
-    def retranslateUi(self, Dialog):
+    def retranslateUi(self, URLNeeded):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.InfoLabel.setText(_translate("Dialog", "Missing or invalid URL."))
-        self.CloseButton.setText(_translate("Dialog", "Close"))
+        URLNeeded.setWindowTitle(_translate("URLNeeded", "Dialog"))
+        self.InfoLabel.setText(_translate("URLNeeded", "Missing or invalid URL."))
+        self.CloseButton.setText(_translate("URLNeeded", "Close"))
