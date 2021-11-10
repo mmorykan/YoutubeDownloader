@@ -1,5 +1,11 @@
+altgraph==0.17.2
 click==7.1.2
-mutagen==1.45.1
+decorator==5.1.0
+macholib==1.15.2
+pydub==0.25.1
+pyinstaller==4.6
+pyinstaller-hooks-contrib==2021.3
+pyqt-darktheme==1.2.5
 PyQt5==5.15.4
 pyqt5-plugins==5.15.4.2.2
 PyQt5-Qt5==5.15.2
@@ -8,4 +14,6 @@ pyqt5-tools==5.15.4.3.2
 python-dotenv==0.19.1
 qt5-applications==5.15.2.2.2
 qt5-tools==5.15.2.1.2
+six==1.16.0
+validators==0.18.2
 youtube-dl==2021.6.6
