@@ -3,6 +3,11 @@ from downloader import YoutubeDownloader
 
 
 class DownloadProgressThread(QThread):
+    """
+    A class that represents a QThread that constantly updates the progress bar upon download.
+    This class contains one instance of YoutubeDownloader and adds its own progress method as the progess hook
+    Also, we use pyqtSignals to be able to emit data back to the main thread so that the main thread can update the GUI.
+    """
 
     # These must be class variables outside the constructor
     progress = pyqtSignal(float, str, str, str)
@@ -12,7 +17,7 @@ class DownloadProgressThread(QThread):
         super().__init__()
         self.song_data = {}
         self.downloader = YoutubeDownloader()
-        self.downloader.ydl_opts['progress_hooks'] = [self.progress_bar]  # Send callback function to youtube-dl for progress reports during download
+        self.downloader.add_progress_hook(self.progress_bar)
         
     def download(self):
         self.downloader.download(self.song_data)
@@ -21,4 +26,5 @@ class DownloadProgressThread(QThread):
         if song['status'] != 'finished':
             self.progress.emit(float(song['_percent_str'][:-1]), song['_eta_str'], song['_speed_str'], song['_total_bytes_str'])
         else:
+            self.downloader.trim_audio(self.song_data)
             self.done.emit()

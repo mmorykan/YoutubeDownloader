@@ -2,6 +2,10 @@ from PyQt5.QtWidgets import QDialog
 from dialogs.file_exists_dialog import Ui_FileExistsDialog
 
 class FileExists(QDialog, Ui_FileExistsDialog):
+    """
+    Dialog that appears when the user input a filename that already exists in that directory.
+    Asks the user if they want to overwrite the existing file.
+    """
 
     def __init__(self, parent=None):
         super().__init__()
