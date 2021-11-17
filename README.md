@@ -15,7 +15,7 @@ Then, to bundle this application as a .app for MacOS, run:
 
 To compile this program into a .exe for Windows, install the Windows <a href="https://ffmpeg.org/download.html#build-windows">FFmpeg</a> binaries in the root of the project directory. Then run:
 
-`pyinstaller --onefile --windowed --icon=resource/icon.ico --add-binary=ffmpeg_windows/bin/*:. app/app.py`
+`pyinstaller --onefile --windowed --icon=resource\icon.ico --add-binary=ffmpeg_windows\bin\*;. app\app.py`
 
 
 
