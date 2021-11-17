@@ -9,13 +9,13 @@ All input fields in the program are optional except for the URL text box.
 ## Installation
 To run the program, create a Python virtual environment and install all the requirements in requirements.txt.
 
-To bundle this application as a .app for MacOS, run:
+Then, to bundle this application as a .app for MacOS, run:
 
 `pyinstaller --onefile --windowed --icon=resource/icon.icns --add-binary=ffmpeg_mac/bin/*:. app/app.py`
 
-To compile this program into a .exe for Windows, run:
+To compile this program into a .exe for Windows, install the Windows <a href="https://ffmpeg.org/download.html#build-windows">FFmpeg</a> binaries in the root of the project directory. Then run:
 
-`pyinstaller --onefile --windowed --icon=resource/icon.ico --add-binary=ffmpeg_windows/bin/ffmpeg.exe*:. app/app.py`
+`pyinstaller --onefile --windowed --icon=resource/icon.ico --add-binary=ffmpeg_windows/bin/*:. app/app.py`
 
 
 
