@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from youtube_dl import YoutubeDL
-from pydub import AudioSegment
+from pydub import AudioSegment, utils
 from download_logger import Logger
+import os, sys
 
 
 class YoutubeDownloader():
@@ -18,6 +19,13 @@ class YoutubeDownloader():
                                             'cachedir': False,
                                             'logger': Logger(),
                                             })
+        
+        # If the app running in a bundled state, we must use absolute paths to find the ffmpeg binaries
+        if getattr(sys, 'frozen', False):
+            this_script_dir = os.path.dirname(os.path.realpath(__file__))
+            ext = '.exe' if os.name == 'nt' else ''
+            utils.get_prober_name = lambda: os.path.join(this_script_dir, 'ffprobe' + ext)
+            AudioSegment.converter = os.path.join(this_script_dir, 'ffmpeg' + ext)
 
     def download(self, data):
         """
@@ -52,24 +60,40 @@ class YoutubeDownloader():
         All times have been converted to milliseconds to work with pydub for audio slicing.
         Saves the newly trimmed file with the specified metadata.
         """
-
         start, end = data['start_time'], data['end_time']
-        audio = AudioSegment.from_file(data['full_path'], data['format'])
-        if start and end:
-            start_time = (start.tm_min * 60 + start.tm_sec) * 1000
-            end_time = (end.tm_min * 60 + end.tm_sec) * 1000
-            audio = audio[start_time:end_time]
-        elif start:
-            start_time = (start.tm_min * 60 + start.tm_sec) * 1000
-            audio = audio[start_time:]
-        elif end:
-            end_time = (end.tm_min * 60 + end.tm_sec) * 1000
-            audio = audio[:end_time]
-        audio.export(data['full_path'], tags={'title': data['title'], 'artist': data['artist'], 'genre': data['genre']})
- 
+        try: 
+            audio = AudioSegment.from_file(data['full_path'])
+        except Exception as e:
+            with open(os.path.expanduser('~')+'/error.txt', 'a') as f:
+                f.write(f'{AudioSegment.converter} line 61: {e}')
+        try:
+            if start and end:
+                audio = audio[self.__convert_time(start):self.__convert_time(end)]
+            elif start:
+                audio = audio[self.__convert_time(start):]
+            elif end:
+                audio = audio[:self.__convert_time(end)]
+        except Exception as e:
+            with open(os.path.expanduser('~')+'/error.txt', 'a') as f:
+                f.write(f'error line 75: {e}')
+        try:
+            audio.export(data['full_path'], tags={'title': data['title'], 'artist': data['artist'], 'genre': data['genre']})
+        except Exception as e:
+            with open(os.path.expanduser('~')+'/error.txt', 'a') as f:
+                f.write('line 81 '+str(e))
+
+
     def add_progress_hook(self, hook):
         """
         Adds a callback function hook to the downloader so user can receive progress updates
         """
 
         self.youtube_downloader.add_progress_hook(hook)
+
+    def __convert_time(self, time):
+        """
+        converts time object to milliseconds
+        """
+        
+        return (time.tm_min * 60 + time.tm_sec) * 1000
+
