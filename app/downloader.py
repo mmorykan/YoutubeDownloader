@@ -12,20 +12,32 @@ class YoutubeDownloader():
     """
 
     def __init__(self):
+
+        # If the app running in a bundled state, we must use absolute paths to find the ffmpeg binaries
+        this_script_dir = os.path.dirname(os.path.realpath(__file__))
+        ext, plat = ('.exe', 'windows') if os.name == 'nt' else ('', 'mac')
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            utils.get_prober_name = lambda: os.path.join(this_script_dir, 'ffprobe' + ext)
+            AudioSegment.converter = os.path.join(this_script_dir, 'ffmpeg' + ext)
+            ffmpeg_location = this_script_dir
+        else:
+            utils.get_prober_name = lambda: os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin', 'ffprobe' + ext)
+            AudioSegment.converter = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin', 'ffmpeg' + ext)
+            ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin')
+
         self.youtube_downloader = YoutubeDL({
+                                            'ffmpeg_location': ffmpeg_location,
                                             'extractaudio': True,
                                             'noplaylist': True,
                                             'nocheckcertificate': True,
                                             'cachedir': False,
                                             'logger': Logger(),
+                                            'postprocessors': [{
+                                                'key': 'FFmpegExtractAudio',
+                                                'preferredcodec': 'mp3',
+                                                'preferredquality': '192',
+                                                }],
                                             })
-        
-        # If the app running in a bundled state, we must use absolute paths to find the ffmpeg binaries
-        if getattr(sys, 'frozen', False):
-            this_script_dir = os.path.dirname(os.path.realpath(__file__))
-            ext = '.exe' if os.name == 'nt' else ''
-            utils.get_prober_name = lambda: os.path.join(this_script_dir, 'ffprobe' + ext)
-            AudioSegment.converter = os.path.join(this_script_dir, 'ffmpeg' + ext)
 
     def download(self, data):
         """
