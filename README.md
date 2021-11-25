@@ -11,11 +11,11 @@ To run the program, create a Python virtual environment and install all the requ
 
 Then, to bundle this application as a .app for MacOS, run:
 
-`pyinstaller --onefile --windowed --icon=resource/icon.icns --add-binary=ffmpeg_mac/bin/*:. app/app.py`
+`pyinstaller --onefile --windowed --icon=resource/icon.icns --add-binary=ffmpeg_mac/bin/*:. -n "Youtube Downloader" app/app.py`
 
 To compile this program into a .exe for Windows, install the Windows <a href="https://ffmpeg.org/download.html#build-windows">FFmpeg</a> binaries in the root of the project directory. Then run:
 
-`pyinstaller --onefile --windowed --icon=resource\icon.ico --add-binary=ffmpeg_windows\bin\*;. app\app.py`
+`pyinstaller --onefile --windowed --icon=resource\icon.ico --add-binary=ffmpeg_windows\bin\*;. -n "Youtube Downloader" app\app.py`
 
 
 
