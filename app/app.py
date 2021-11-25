@@ -110,6 +110,10 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             self.progress.start_download(download_info)
         
+        # Clear all fields except folder field
+        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText):
+            field.clear()
+        
     def list_formats(self):
         url = self.UrlText.text()
         if not self.__is_valid_url(url):
@@ -150,7 +154,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def restore_settings(self):
         # Load the previously chosen folder on startup
-        directory = self.settings.value("directory")
+        directory = self.settings.value("directory", os.path.expanduser('~'))
         self.FolderText.setText(directory)
 
 
