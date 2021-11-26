@@ -7,7 +7,7 @@ import os, sys
 
 class YoutubeDownloader():
     """
-    This class contains a single YoutubeDL instance that downloads audio from videos, 
+    This class contains a single YoutubeDL instance from yt-dlp that downloads audio from videos, 
     gets info from them, and trims the audio file after download
     """
 
@@ -25,7 +25,7 @@ class YoutubeDownloader():
             ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin')
 
         self.youtube_downloader = YoutubeDL({
-                                            'ffmpeg_location': ffmpeg_location,
+                                            # 'ffmpeg_location': ffmpeg_location,
                                             'extractaudio': True,
                                             'noplaylist': True,
                                             'nocheckcertificate': True,
@@ -61,9 +61,8 @@ class YoutubeDownloader():
         """
 
         meta = self.youtube_downloader.extract_info(url, download=False)
-        print(meta)
         return {
-            'formats': {format['ext'] for format in meta['formats']}, 
+            'formats': {format['ext'] for format in meta['formats']} - {'webm'}, 
             'title': meta['title'], 
             'duration': meta['duration'] 
             }
