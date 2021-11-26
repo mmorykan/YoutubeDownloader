@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 from yt_dlp import YoutubeDL
-# from pydub import AudioSegment, utils
 from download_logger import Logger
 import os, sys
 
@@ -12,17 +11,13 @@ class YoutubeDownloader():
     """
 
     def __init__(self):
-        # If the app running in a bundled state, we must use absolute paths to find the ffmpeg binaries
+        # If the app running in a bundled state, we may need absolute paths to find the ffmpeg binaries
         this_script_dir = os.path.dirname(os.path.realpath(__file__))
-        ext, plat = ('.exe', 'windows') if os.name == 'nt' else ('', 'mac')
+        platform = 'windows' if os.name == 'nt' else 'mac'
         if getattr(sys, 'frozen', False):
-            # utils.get_prober_name = lambda: os.path.join(this_script_dir, 'ffprobe' + ext)
-            # AudioSegment.converter = os.path.join(this_script_dir, 'ffmpeg' + ext)
             ffmpeg_location = this_script_dir
         else:
-            # utils.get_prober_name = lambda: os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin', 'ffprobe' + ext)
-            # AudioSegment.converter = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin', 'ffmpeg' + ext)
-            ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_'+plat, 'bin')
+            ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_' + platform, 'bin')
 
         self.youtube_downloader = YoutubeDL({
                                             # 'ffmpeg_location': ffmpeg_location,
@@ -41,17 +36,16 @@ class YoutubeDownloader():
         """
         Downloads the youtube audio given the format and output path.
         Removes the youtube_dl cache upon every download to not get a 403 forbidden error 
-        because youtube_dl has no convenient option for this yet.
+        because cachedir may not work yet.
         """
 
         # Sets the format and download path in the YoutubeDL object
         self.youtube_downloader.params['outtmpl'] = data['full_path']
-        self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(data['format'])
-        self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()
-
+        self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py
+        self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(data['format'])  # Check yt-dlp __init__ for YoutubeDL.py
         self.add_metadata(data)
 
-        # Must run youtube-dl --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
+        # Must run yt-dlp --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
         self.youtube_downloader.cache.remove()
         self.youtube_downloader.download([data['url']])
 
@@ -67,35 +61,11 @@ class YoutubeDownloader():
             'duration': meta['duration'] 
             }
 
-    # def trim_audio(self, data):
-    #     """
-    #     Trims the audio from a just downloaded file if a start time or end time as been specified.
-    #     All times have been converted to milliseconds to work with pydub for audio slicing.
-    #     Saves the newly trimmed file with the specified metadata.
-    #     """
-    #     start, end = data['start_time'], data['end_time']
-    #     try: 
-    #         audio = AudioSegment.from_file(data['full_path'])
-    #     except Exception as e:
-    #         with open(os.path.expanduser('~')+'/error.txt', 'a') as f:
-    #             f.write(f'{data["full_path"]}{AudioSegment.converter} line 61: {e}')
-    #     try:
-    #         if start and end:
-    #             audio = audio[self.__convert_time(start):self.__convert_time(end)]
-    #         elif start:
-    #             audio = audio[self.__convert_time(start):]
-    #         elif end:
-    #             audio = audio[:self.__convert_time(end)]
-    #     except Exception as e:
-    #         with open(os.path.expanduser('~')+'/error.txt', 'a') as f:
-    #             f.write(f'error line 75: {e}')
-    #     try:
-    #         audio.export(data['full_path'], tags={'title': data['title'], 'artist': data['artist'], 'genre': data['genre']})
-    #     except Exception as e:
-    #         with open(os.path.expanduser('~')+'/error.txt', 'a') as f:
-    #             f.write('line 81 '+str(e))
-
     def add_metadata(self, data):
+        """
+        Determines the post processor arguments for the youtube downloader.
+        Trims the audio of the video and adds metadata to the file.
+        """
 
         postprocessor_args = []
         start, end = data['start_time'], data['end_time']
@@ -118,11 +88,3 @@ class YoutubeDownloader():
         """
 
         self.youtube_downloader.add_progress_hook(hook)
-
-    # def __convert_time(self, time):
-    #     """
-    #     converts time object to milliseconds
-    #     """
-        
-    #     return (time.tm_min * 60 + time.tm_sec) * 1000
-
