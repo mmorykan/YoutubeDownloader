@@ -35,6 +35,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         Gives progress updater class the user input song data.
         Starts QThread to start downloading.
         """
+        
         self.reset()
         self.progress_updater.song_data = data  # Just a pass through
         self.filename = data['filename'] + '.' + data['format']
