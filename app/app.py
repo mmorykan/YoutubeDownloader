@@ -1,7 +1,6 @@
 import sys, os
 
 # PyQt5 modules
-from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QIcon
