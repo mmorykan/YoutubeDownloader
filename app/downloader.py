@@ -12,15 +12,13 @@ class YoutubeDownloader():
 
     def __init__(self):
         # If the app running in a bundled state, we may need absolute paths to find the ffmpeg binaries
-        this_script_dir = os.path.dirname(os.path.realpath(__file__))
-        platform = 'windows' if os.name == 'nt' else 'mac'
-        if getattr(sys, 'frozen', False):
-            ffmpeg_location = this_script_dir
-        else:
+        ffmpeg_location = this_script_dir = os.path.dirname(os.path.realpath(__file__))
+        if not getattr(sys, 'frozen', False):
+            platform = 'windows' if os.name == 'nt' else 'mac'
             ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_' + platform, 'bin')
 
         self.youtube_downloader = YoutubeDL({
-                                            # 'ffmpeg_location': ffmpeg_location,
+                                            'ffmpeg_location': ffmpeg_location,  # Need path to ffmpeg
                                             'extractaudio': True,
                                             'noplaylist': True,
                                             'nocheckcertificate': True,
