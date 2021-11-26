@@ -1,9 +1,11 @@
 import sys, os
 
 # PyQt5 modules
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QIcon
+
 from darktheme.widget_template import DarkPalette
 import resources  # Must be imported for resource files such as icons
 
@@ -81,14 +83,14 @@ class Window(QMainWindow, Ui_MainWindow):
 
         # Format end time if entered
         if end_time:
-            end_time = self.__is_valid_time(end_time, data['duration'])
-            if not end_time:
+            end_time_formatted = self.__is_valid_time(end_time, data['duration'])
+            if not end_time_formatted:
                 return
 
         # Format start time if entered
         if start_time:
-            start_time = self.__is_valid_time(start_time, (end_time.tm_min * 60 + end_time.tm_sec) if end_time else data['duration'])
-            if not start_time:
+            start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.tm_min * 60 + end_time_formatted.tm_sec) if end_time else data['duration'])
+            if not start_time_formatted:
                 return
 
         full_path = os.path.join(path, filename + '.' + self.format)
@@ -105,13 +107,12 @@ class Window(QMainWindow, Ui_MainWindow):
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
             if self.file_exists.overwrite_file:
-                os.remove(full_path)  # Need this because youtube-dl won't overwrite existing files with same name
                 self.progress.start_download(download_info)
         else:
             self.progress.start_download(download_info)
         
         # Clear all fields except folder field
-        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText):
+        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText, self.FormatList):
             field.clear()
         
     def list_formats(self):
@@ -139,6 +140,7 @@ class Window(QMainWindow, Ui_MainWindow):
         if duration:
             if (formatted.tm_min * 60 + formatted.tm_sec) < duration:
                 return formatted
+                # return trim_time
             else:
                 self.invalid_time.exec()
                 return False
