@@ -19,7 +19,6 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.progress_updater = DownloadProgressThread()
         self.thread = QThread()
         self.filename = ''
-
         self.connect_signals_slots()
 
     def connect_signals_slots(self):
@@ -35,7 +34,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         Gives progress updater class the user input song data.
         Starts QThread to start downloading.
         """
-        
+
         self.reset()
         self.progress_updater.song_data = data  # Just a pass through
         self.filename = data['filename'] + '.' + data['format']
@@ -43,7 +42,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.thread.start()
 
     def update_progress_bar(self, percentage, eta, speed, size):
-        self.ProgressLabel.setText(self.filename + '\t' + 'ETA: ' + eta + ', ' + speed + ', ' + size)
+        self.ProgressLabel.setText((self.filename if len(self.filename) < 40 else self.filename[:40] + '... ') + '\t' + 'ETA: ' + eta + ', ' + speed + ', ' + size)
         self.ProgressBar.setValue(int(percentage*10))
         self.ProgressBar.setFormat("{:.02f}%".format(percentage))
 
