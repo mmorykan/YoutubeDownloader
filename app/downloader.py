@@ -77,5 +77,6 @@ class YoutubeDownloader():
 
         self.youtube_downloader.params['postprocessor_args'] = postprocessor_args
 
-    def get_supported_formats(self):
+    @staticmethod
+    def get_supported_formats():
         return FFmpegExtractAudioPP.SUPPORTED_EXTS
