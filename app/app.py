@@ -37,6 +37,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.settings = QSettings("Mark Project", "Youtube Downloader")
         self.FormatList.addItems(self.progress.progress_updater.downloader.get_supported_formats())
         self.setup_info_button()
+        self.set_icons()
         self.restore_settings()
         self.connect_signals_slots()
         
@@ -50,6 +51,11 @@ class Window(QMainWindow, Ui_MainWindow):
         self.InfoButton.setStyleSheet('background-color: white')
         self.InfoButton.setIcon(QIcon(':/icons/info.jpg'))
         self.InfoButton.setIconSize(self.InfoButton.size())
+
+    def set_icons(self):
+        icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
+        for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time):
+            dialog.setWindowIcon(icon)
 
     def choose_path(self, _):
         directory = QFileDialog.getExistingDirectory(self, self.tr("Select Directory"), os.path.expanduser('~'),
@@ -87,7 +93,7 @@ class Window(QMainWindow, Ui_MainWindow):
             start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.tm_min * 60 + end_time_formatted.tm_sec) if end_time else data['duration'])
             if not start_time_formatted:
                 return
-                
+
         full_path = os.path.join(path, filename + '.' + self.format)
         download_info = {'url': url,
                         'title': self.TitleText.text(),
