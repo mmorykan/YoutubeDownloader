@@ -2,7 +2,7 @@ import sys, os
 
 # PyQt5 modules
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QSettings, Qt
 from PyQt5.QtGui import QIcon
 
 from darktheme.widget_template import DarkPalette
@@ -29,20 +29,19 @@ class Window(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.format = 'm4a'  # bestaudio/best' downloads best quality audio/video
         self.progress = ProgessBar()
         self.file_exists = FileExists()
         self.url_needed = URLNeeded()
         self.info = Info()
         self.invalid_time = InvalidTime()
-        self.settings = QSettings()
+        self.settings = QSettings("Mark Project", "Youtube Downloader")
+        self.FormatList.addItems(self.progress.progress_updater.downloader.get_supported_formats())
         self.setup_info_button()
         self.restore_settings()
         self.connect_signals_slots()
-
+        
     def connect_signals_slots(self):
         self.DownloadButton.clicked.connect(self.download)
-        self.ListFormatButton.clicked.connect(self.list_formats)
         self.FolderButton.clicked.connect(self.choose_path)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
@@ -57,10 +56,11 @@ class Window(QMainWindow, Ui_MainWindow):
                                        QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if directory:
             self.FolderText.setText(directory)
-            self.save_settings(directory)
+            self.settings.setValue('directory', directory)
 
     def choose_format(self, index):
         self.format = index.data()
+        self.settings.setValue('format_row', index.row())
 
     def download(self):
         url = self.UrlText.text()
@@ -76,10 +76,6 @@ class Window(QMainWindow, Ui_MainWindow):
         if not filename:
             filename = data['title']
 
-        # Default the path if not entered
-        if not path:
-            path = os.path.expanduser('~')
-
         # Format end time if entered
         if end_time:
             end_time_formatted = self.__is_valid_time(end_time, data['duration'])
@@ -91,7 +87,7 @@ class Window(QMainWindow, Ui_MainWindow):
             start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.tm_min * 60 + end_time_formatted.tm_sec) if end_time else data['duration'])
             if not start_time_formatted:
                 return
-
+                
         full_path = os.path.join(path, filename + '.' + self.format)
         download_info = {'url': url,
                         'title': self.TitleText.text(),
@@ -111,15 +107,8 @@ class Window(QMainWindow, Ui_MainWindow):
             self.progress.start_download(download_info)
         
         # Clear all fields except folder field
-        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText, self.FormatList):
+        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText):
             field.clear()
-        
-    def list_formats(self):
-        url = self.UrlText.text()
-        if not self.__is_valid_url(url):
-            return
-        data = self.__get_info(url)
-        self.FormatList.addItems(data['formats'])
 
     def __is_valid_url(self, url):
         # If a url is not valid, execute dialog and return False
@@ -149,14 +138,13 @@ class Window(QMainWindow, Ui_MainWindow):
     def __get_info(self, url):
         return self.progress.progress_updater.downloader.get_info(url)
 
-    def save_settings(self, directory):
-        # Save the chosen directory in QSettings for convenience the next time the app is run
-        self.settings.setValue("directory", directory)
-
     def restore_settings(self):
         # Load the previously chosen folder on startup
         directory = self.settings.value("directory", os.path.expanduser('~'))
         self.FolderText.setText(directory)
+        row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row())
+        self.FormatList.setCurrentRow(row)
+        self.format = self.FormatList.item(row).text()
 
 
 if __name__ == "__main__":
