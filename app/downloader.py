@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from yt_dlp import YoutubeDL
+from yt_dlp import YoutubeDL, FFmpegExtractAudioPP
 from download_logger import Logger
 import os, sys
 
@@ -24,10 +24,8 @@ class YoutubeDownloader():
                                             'nocheckcertificate': True,
                                             'cachedir': False,
                                             'logger': Logger(),
-                                            'postprocessors': [{
-                                                'key': 'FFmpegExtractAudio',
-                                                }],
-                                            'overwrites': True
+                                            'overwrites': True,
+                                            'format': 'bestaudio/best'
                                             })
 
     def download(self, data):
@@ -40,7 +38,7 @@ class YoutubeDownloader():
         # Sets the format and download path in the YoutubeDL object
         self.youtube_downloader.params['outtmpl'] = data['full_path']
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py
-        self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(data['format'])  # Check yt-dlp __init__ for YoutubeDL.py
+        self.youtube_downloader.add_post_processor(FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format']))
         self.add_metadata(data)
 
         # Must run yt-dlp --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
@@ -54,7 +52,6 @@ class YoutubeDownloader():
 
         meta = self.youtube_downloader.extract_info(url, download=False)
         return {
-            'formats': {format['ext'] for format in meta['formats']} - {'webm'}, 
             'title': meta['title'], 
             'duration': meta['duration'] 
             }
@@ -80,9 +77,5 @@ class YoutubeDownloader():
 
         self.youtube_downloader.params['postprocessor_args'] = postprocessor_args
 
-    def add_progress_hook(self, hook):
-        """
-        Adds a callback function hook to the downloader so user can receive progress updates
-        """
-
-        self.youtube_downloader.add_progress_hook(hook)
+    def get_supported_formats(self):
+        return FFmpegExtractAudioPP.SUPPORTED_EXTS
