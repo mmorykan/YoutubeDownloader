@@ -17,7 +17,7 @@ class DownloadProgressThread(QThread):
         super().__init__()
         self.song_data = {}
         self.downloader = YoutubeDownloader()
-        self.downloader.add_progress_hook(self.progress_bar)
+        self.downloader.youtube_downloader.add_progress_hook(self.progress_bar)
         
     def download(self):
         self.downloader.download(self.song_data)
