@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
     <file alias="info.jpg">info_button.jpg</file>
+    <file alias="mac_app.jpg">icon.icns</file>
+    <file alias="windows_app.jpg">icon.ico</file>
   </qresource>
 </RCC>
