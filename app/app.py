@@ -76,7 +76,7 @@ class Window(QMainWindow, Ui_MainWindow):
         start_time = self.StartTimeText.text()
         end_time = self.EndTimeText.text()
         filename = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
-        data = self.__get_info(url)
+        data = self.progress.progress_updater.downloader.get_info(url)
         
         # Default the filename if not entered
         if not filename:
@@ -140,9 +140,6 @@ class Window(QMainWindow, Ui_MainWindow):
                 return False
         else:
             return formatted
-
-    def __get_info(self, url):
-        return self.progress.progress_updater.downloader.get_info(url)
 
     def restore_settings(self):
         # Load the previously chosen folder on startup
