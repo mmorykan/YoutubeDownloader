@@ -2,7 +2,7 @@
 
 ## Description
 
-YoutubeDownloader is an application built on the Python package <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> to download audio from YouTube videos. This application utilizes ffmpeg to trim audio files upon download and was created using PyQt5 and PyQt5 Designer.
+YoutubeDownloader is an application built on the Python package <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> to download audio from YouTube videos. This application utilizes ffmpeg to trim audio files and add metadata upon download and was created using PyQt5 and PyQt5 Designer.
 
 All input fields in the program are optional except for the URL text box.
 
