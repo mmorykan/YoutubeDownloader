@@ -2,7 +2,7 @@ import sys, os
 
 # PyQt5 modules
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
-from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtCore import QSettings, QSize, Qt
 from PyQt5.QtGui import QIcon
 
 from darktheme.widget_template import DarkPalette
@@ -35,11 +35,11 @@ class Window(QMainWindow, Ui_MainWindow):
         self.info = Info()
         self.invalid_time = InvalidTime()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
-        self.FormatList.addItems(self.progress.progress_updater.downloader.get_supported_formats())
+        self.connect_signals_slots()
         self.setup_info_button()
         self.set_icons()
+        self.resize_format_list()
         self.restore_settings()
-        self.connect_signals_slots()
         
     def connect_signals_slots(self):
         self.DownloadButton.clicked.connect(self.download)
@@ -50,12 +50,18 @@ class Window(QMainWindow, Ui_MainWindow):
     def setup_info_button(self):
         self.InfoButton.setStyleSheet('background-color: white')
         self.InfoButton.setIcon(QIcon(':/icons/info.jpg'))
+        self.InfoButton.resize(self.InfoButton.size().width(), self.DownloadButton.size().height())
         self.InfoButton.setIconSize(self.InfoButton.size())
 
     def set_icons(self):
         icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
         for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time):
             dialog.setWindowIcon(icon)
+
+    def resize_format_list(self):
+        formats = self.progress.progress_updater.downloader.get_supported_formats()
+        self.FormatList.addItems(formats)
+        self.FormatList.setFixedSize(self.FormatLabel.size().width(), self.FormatList.sizeHintForRow(0)*(len(formats) + 1))
 
     def choose_path(self, _):
         directory = QFileDialog.getExistingDirectory(self, self.tr("Select Directory"), os.path.expanduser('~'),
