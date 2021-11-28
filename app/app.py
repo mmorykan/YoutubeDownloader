@@ -134,7 +134,6 @@ class Window(QMainWindow, Ui_MainWindow):
         if duration:
             if (formatted.tm_min * 60 + formatted.tm_sec) < duration:
                 return formatted
-                # return trim_time
             else:
                 self.invalid_time.exec()
                 return False
@@ -142,7 +141,10 @@ class Window(QMainWindow, Ui_MainWindow):
             return formatted
 
     def restore_settings(self):
-        # Load the previously chosen folder on startup
+        """
+        Loads the previously chosen downloads folder and file format
+        """
+
         directory = self.settings.value("directory", os.path.expanduser('~'))
         self.FolderText.setText(directory)
         row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row())
