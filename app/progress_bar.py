@@ -15,10 +15,8 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.setupUi(self)
         self.setWindowTitle('Downloading...')
         self.ProgressBar.setMaximum(1000)
-
         self.progress_updater = DownloadProgressThread()
         self.thread = QThread()
-        self.filename = ''
         self.connect_signals_slots()
 
     def connect_signals_slots(self):
