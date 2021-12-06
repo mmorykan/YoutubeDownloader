@@ -64,7 +64,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FormatList.setFixedSize(self.FormatLabel.size().width(), self.FormatList.sizeHintForRow(0)*(len(formats) + 1))
 
     def choose_path(self, _):
-        directory = QFileDialog.getExistingDirectory(self, self.tr("Select Directory"), os.path.expanduser('~'),
+        directory = QFileDialog.getExistingDirectory(self, self.tr("Select Directory"), self.FolderText.text(),
                                        QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if directory:
             self.FolderText.setText(directory)
