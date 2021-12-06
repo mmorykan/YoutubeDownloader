@@ -100,17 +100,16 @@ class Window(QMainWindow, Ui_MainWindow):
             if not start_time_formatted:
                 return
 
-        full_path = os.path.join(path, filename + '.' + self.format)
         download_info = {'url': url,
                         'title': self.TitleText.text(),
                         'artist': self.ArtistText.text(),
                         'genre': self.GenreText.text(),
                         'start_time': start_time,
                         'end_time': end_time,
-                        'full_path': full_path,
+                        'path': path,
                         'filename': filename,
                         'format': self.format}
-        if os.path.exists(full_path):  # Ask to overwrite file if it already exists
+        if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
             if self.file_exists.overwrite_file:

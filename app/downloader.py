@@ -1,8 +1,5 @@
 from __future__ import unicode_literals
 from yt_dlp import YoutubeDL, FFmpegExtractAudioPP
-# from yt_dlp.extractor.youtube import YoutubeIE
-from yt_dlp.postprocessor.common import PostProcessor
-import yt_dlp
 from download_logger import Logger
 import os, sys
 
@@ -29,28 +26,21 @@ class YoutubeDownloader():
                                             'logger': Logger(),
                                             'overwrites': True,
                                             'format': 'bestaudio/best',
-                                            'postprocessor_args': ['-ss', '1:00', '-to', '2:00']
                                             })
 
     def download(self, data):
         """
         Downloads the youtube audio given the format and output path.
         Removes the youtube_dl cache upon every download to not get a 403 forbidden error 
-        because cachedir may not work yet.
+        because cachedir option may not work yet.
         """
 
         # Sets the format and download path in the YoutubeDL object
-        self.youtube_downloader.params['outtmpl'] = data['full_path']
-        self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py
-        # self.add_metadata(data)
+        self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
+        self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py        
+        self.youtube_downloader.add_post_processor(FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format']))
+        self.add_metadata(data)
 
-        pp = FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format'])
-        
-        self.youtube_downloader.add_post_processor(pp)
-        # self.youtube_downloader.add_info_extractor(YoutubeIE)
-        # print(self.youtube_downloader._pps)
-        # print(self.youtube_downloader._ies, self.youtube_downloader._ies_instances['Youtube']._downloader == self.youtube_downloader)
-        # return
         # Must run yt-dlp --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
         self.youtube_downloader.cache.remove()
         self.youtube_downloader.download([data['url']])
@@ -79,7 +69,7 @@ class YoutubeDownloader():
         elif start:
             postprocessor_args = ['-ss', start]
         elif end:
-            postprocessor_args = ['-ss', '00:00', '-to', end]
+            postprocessor_args = ['-ss', '00:00:00', '-to', end]
 
         for metadata in ('title', 'artist', 'genre'):
             if data[metadata]:
