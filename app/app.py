@@ -46,6 +46,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FolderButton.clicked.connect(self.choose_path)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
+        self.KeepOriginalBox.stateChanged.connect(self.save_keep_video)
 
     def setup_info_button(self):
         self.InfoButton.setStyleSheet('background-color: white')
@@ -57,6 +58,9 @@ class Window(QMainWindow, Ui_MainWindow):
         icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
         for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time):
             dialog.setWindowIcon(icon)
+
+    def save_keep_video(self):
+        self.settings.setValue('keep_video', self.KeepOriginalBox.isChecked())
 
     def resize_format_list(self):
         formats = self.progress.progress_updater.downloader.get_supported_formats()
@@ -108,7 +112,8 @@ class Window(QMainWindow, Ui_MainWindow):
                         'end_time': end_time,
                         'path': path,
                         'filename': filename,
-                        'format': self.format}
+                        'format': self.format,
+                        'keepvideo': self.KeepOriginalBox.isChecked()}
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
@@ -155,6 +160,7 @@ class Window(QMainWindow, Ui_MainWindow):
         row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row())
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
+        self.KeepOriginalBox.setChecked(self.settings.value('keep_video', False))
 
 
 if __name__ == "__main__":

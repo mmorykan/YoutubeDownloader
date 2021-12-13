@@ -36,8 +36,11 @@ class YoutubeDownloader():
         """
 
         # Sets the format and download path in the YoutubeDL object
+        if data['keepvideo']:
+            self.youtube_downloader.params['keepvideo'] = data['keepvideo']
         self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
-        self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py        
+        self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
+        
         self.youtube_downloader.add_post_processor(FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format']))
         self.add_metadata(data)
 
