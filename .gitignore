@@ -8,3 +8,4 @@ build/
 dist/
 *.spec
 ffmpeg*
+.qt_for_python/
