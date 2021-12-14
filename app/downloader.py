@@ -44,7 +44,7 @@ class YoutubeDownloader():
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
         
         self.youtube_downloader.add_post_processor(FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format']))
-        self.add_metadata(data)
+        self.youtube_downloader.params['postprocessor_args'] = self.get_postprocessor_args(data)
 
         # Must run yt-dlp --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
         self.youtube_downloader.cache.remove()
@@ -63,7 +63,7 @@ class YoutubeDownloader():
             'duration': meta['duration'] 
             }
 
-    def add_metadata(self, data):
+    def get_postprocessor_args(self, data):
         """
         Determines the post processor arguments for the youtube downloader.
         Trims the audio of the video and adds metadata to the file.
@@ -82,7 +82,7 @@ class YoutubeDownloader():
             if data[metadata]:
                 postprocessor_args += ['-metadata', f'{metadata}={data[metadata]}']
 
-        self.youtube_downloader.params['postprocessor_args'] = postprocessor_args
+        return postprocessor_args
 
     def modify_original(self, data):
         """
