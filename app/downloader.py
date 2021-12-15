@@ -39,19 +39,24 @@ class YoutubeDownloader():
         """
 
         # Sets the format and download path in the YoutubeDL object
-        self.youtube_downloader.params['keepvideo'] = data['keepvideo']
+        self.youtube_downloader.params['keepvideo'] = data['keep_video'] or data['trim_video']
         self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
-        
+        metadata_args = self.get_metadata_args(data['metadata'])
+        self.youtube_downloader.params['postprocessor_args'] = self.get_trim_video_args(data['start_time'], data['end_time']) + metadata_args
         self.youtube_downloader.add_post_processor(FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format']))
-        self.youtube_downloader.params['postprocessor_args'] = self.get_postprocessor_args(data)
-
+        
         # Must run yt-dlp --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
         self.youtube_downloader.cache.remove()
         self.youtube_downloader.download([data['url']])
-        if data['keepvideo']:  # and data['trim_original]
-            self.modify_original(data)
 
+        if data['keep_video'] or data['trim_video']:
+            if data['trim_video']:
+                args = self.youtube_downloader.params['postprocessor_args']
+            elif data['keep_video']:
+                args = metadata_args
+            self.modify_original(args, data['path'], data['filename'])
+        
     def get_info(self, url):
         """
         Returns a set of the formats of the url, as well as the title and duration of the video 
@@ -63,37 +68,37 @@ class YoutubeDownloader():
             'duration': meta['duration'] 
             }
 
-    def get_postprocessor_args(self, data):
-        """
-        Determines the post processor arguments for the youtube downloader.
-        Trims the audio of the video and adds metadata to the file.
-        """
+    def get_metadata_args(self, metadata):
 
-        postprocessor_args = []
-        start, end = data['start_time'], data['end_time']
+        metadata_args = []
+        for metadata_type in ('title', 'artist', 'genre'):
+            if metadata[metadata_type]:
+                metadata_args += ['-metadata', f'{metadata_type}={metadata[metadata_type]}']
+
+        return metadata_args
+
+    def get_trim_video_args(self, start, end):
+
+        trim_args = []
         if start and end:
-            postprocessor_args = ['-ss', start, '-to', end]
+            trim_args = ['-ss', start, '-to', end]
         elif start:
-            postprocessor_args = ['-ss', start]
+            trim_args = ['-ss', start]
         elif end:
-            postprocessor_args = ['-ss', '00:00:00', '-to', end]
+            trim_args = ['-ss', '00:00:00', '-to', end]
 
-        for metadata in ('title', 'artist', 'genre'):
-            if data[metadata]:
-                postprocessor_args += ['-metadata', f'{metadata}={data[metadata]}']
+        return trim_args
 
-        return postprocessor_args
-
-    def modify_original(self, data):
+    def modify_original(self, postprocessor_args, path, filename):
         """
         If the user wants to keep the originally downloaded file before post processing because it is in better format,
         we apply all post processing to the original file as well.
         """
 
-        current_file = os.path.join(data['path'], data['filename'] + '.' + self.ext)
-        output_file = os.path.join(data['path'], data['filename'] + '_edited.' + self.ext)  # Temp file to be written to and renamed
+        current_file = os.path.join(path, filename + '.' + self.ext)
+        output_file = os.path.join(path, filename + '_edited.' + self.ext)  # Temp file to be written to and renamed
         proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', current_file] + \
-                        self.youtube_downloader.params['postprocessor_args'] + \
+                        postprocessor_args + \
                         ['-c', 'copy', output_file])
         proc.wait()
         os.replace(output_file, current_file)

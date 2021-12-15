@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(640, 302)
+        MainWindow.resize(670, 302)
         MainWindow.setAnimated(True)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -113,7 +113,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.InfoButton)
         self.formLayout.setLayout(8, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout)
         self.layoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.layoutWidget.setGeometry(QtCore.QRect(500, 10, 131, 181))
+        self.layoutWidget.setGeometry(QtCore.QRect(500, 10, 161, 211))
         self.layoutWidget.setObjectName("layoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -138,6 +138,9 @@ class Ui_MainWindow(object):
         self.KeepOriginalBox = QtWidgets.QCheckBox(self.layoutWidget)
         self.KeepOriginalBox.setObjectName("KeepOriginalBox")
         self.verticalLayout.addWidget(self.KeepOriginalBox)
+        self.TrimOriginalBox = QtWidgets.QCheckBox(self.layoutWidget)
+        self.TrimOriginalBox.setObjectName("TrimOriginalBox")
+        self.verticalLayout.addWidget(self.TrimOriginalBox)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -157,3 +160,4 @@ class Ui_MainWindow(object):
         self.DownloadButton.setText(_translate("MainWindow", "Download"))
         self.FormatLabel.setText(_translate("MainWindow", "Supported Formats:"))
         self.KeepOriginalBox.setText(_translate("MainWindow", "Keep Original"))
+        self.TrimOriginalBox.setText(_translate("MainWindow", "Keep Trimmed Original"))

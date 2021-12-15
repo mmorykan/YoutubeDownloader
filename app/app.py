@@ -47,6 +47,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
         self.KeepOriginalBox.stateChanged.connect(self.save_keep_video)
+        self.TrimOriginalBox.stateChanged.connect(self.trim_original)
 
     def setup_info_button(self):
         self.InfoButton.setStyleSheet('background-color: white')
@@ -61,6 +62,9 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def save_keep_video(self):
         self.settings.setValue('keep_video', self.KeepOriginalBox.isChecked())
+
+    def trim_original(self):
+        self.settings.setValue('trim_video', self.TrimOriginalBox.isChecked())
 
     def resize_format_list(self):
         formats = self.progress.progress_updater.downloader.get_supported_formats()
@@ -105,15 +109,18 @@ class Window(QMainWindow, Ui_MainWindow):
                 return
 
         download_info = {'url': url,
-                        'title': self.TitleText.text(),
-                        'artist': self.ArtistText.text(),
-                        'genre': self.GenreText.text(),
+                        'metadata': {
+                            'title': self.TitleText.text(),
+                            'artist': self.ArtistText.text(),
+                            'genre': self.GenreText.text(),
+                        },
                         'start_time': start_time,
                         'end_time': end_time,
                         'path': path,
                         'filename': filename,
                         'format': self.format,
-                        'keepvideo': self.KeepOriginalBox.isChecked()}
+                        'keep_video': self.KeepOriginalBox.isChecked(),
+                        'trim_video': self.TrimOriginalBox.isChecked()}
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
@@ -161,6 +168,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
         self.KeepOriginalBox.setChecked(self.settings.value('keep_video', False))
+        self.TrimOriginalBox.setChecked(self.settings.value('trim_video', False))
 
 
 if __name__ == "__main__":
