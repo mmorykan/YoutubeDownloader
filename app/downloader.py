@@ -69,6 +69,9 @@ class YoutubeDownloader():
             }
 
     def get_metadata_args(self, metadata):
+        """
+        Add metadata arguments to a list for postprocessing.
+        """
 
         metadata_args = []
         for metadata_type in ('title', 'artist', 'genre'):
@@ -78,6 +81,9 @@ class YoutubeDownloader():
         return metadata_args
 
     def get_trim_video_args(self, start, end):
+        """
+        Add trimming times to a list for postprocessing
+        """
 
         trim_args = []
         if start and end:
