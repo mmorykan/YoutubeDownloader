@@ -171,7 +171,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
         for key, box in boxes:
-            box.setChecked(self.settings.value(key), False)
+            box.setChecked(self.settings.value(key, False))
 
     def closeEvent(self, event):
         self.write_settings()

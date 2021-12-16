@@ -128,4 +128,6 @@ class YoutubeDownloader:
 
     @staticmethod
     def get_supported_formats():
-        return set(FFmpegExtractAudioPP.SUPPORTED_EXTS).union(set(FFmpegVideoConvertorPP.SUPPORTED_EXTS))
+        # Cannot use sets here because order will change when displayed in the GUI
+        formats = FFmpegExtractAudioPP.SUPPORTED_EXTS + FFmpegVideoConvertorPP.SUPPORTED_EXTS
+        return [format_ for pos, format_ in enumerate(formats) if format_ not in formats[:pos]]
