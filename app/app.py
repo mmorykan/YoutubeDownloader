@@ -14,8 +14,8 @@ from file_exists import FileExists
 from url_needed import URLNeeded
 from info import Info
 from invalid_time import InvalidTime
+from datetime import datetime
 import validators
-import time
 
 
 class Window(QMainWindow, Ui_MainWindow):
@@ -104,7 +104,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         # Format start time if entered
         if start_time:
-            start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.tm_min * 60 + end_time_formatted.tm_sec) if end_time else data['duration'])
+            start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.minute * 60 + end_time_formatted.second) if end_time else data['duration'])
             if not start_time_formatted:
                 return
 
@@ -143,13 +143,13 @@ class Window(QMainWindow, Ui_MainWindow):
     def __is_valid_time(self, trim_time, duration):
         # All time is compared in seconds
         try:
-            formatted = time.strptime(trim_time, '%M:%S')
+            formatted = datetime.strptime(trim_time, '%M:%S')
         except ValueError:
             self.invalid_time.exec()
             return False
 
         if duration:
-            if (formatted.tm_min * 60 + formatted.tm_sec) < duration:
+            if (formatted.minute * 60 + formatted.second) < duration:
                 return formatted
             else:
                 self.invalid_time.exec()
