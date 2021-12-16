@@ -123,7 +123,8 @@ class YoutubeDownloader:
         """
 
         if song['status'] == 'finished':
-            self.ext = song['info_dict']['audio_ext']
+            # self.ext = song['info_dict']['audio_ext']
+            self.ext = song['info_dict']['ext']
 
     @staticmethod
     def get_supported_formats():
