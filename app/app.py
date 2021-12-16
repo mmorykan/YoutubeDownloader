@@ -69,7 +69,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def resize_format_list(self):
         formats = self.progress.progress_updater.downloader.get_supported_formats()
         self.FormatList.addItems(formats)
-        # Extend the width of the list by the width of the scrollbar. The height is 8 rows
+        # Extend the width of the list by the width (height) of the scrollbar. The height is 8 rows
         self.FormatList.setFixedSize(self.FormatList.size().width() + self.FormatList.verticalScrollBar().size().height(), self.FormatList.sizeHintForRow(0) * 8)
 
     def choose_path(self, _):
@@ -121,7 +121,8 @@ class Window(QMainWindow, Ui_MainWindow):
                         'filename': filename,
                         'format': self.format,
                         'keep_video': self.KeepOriginalBox.isChecked(),
-                        'trim_video': self.TrimOriginalBox.isChecked()}
+                        'trim_video': self.TrimOriginalBox.isChecked(),
+                        'audio_and_video': True}
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
