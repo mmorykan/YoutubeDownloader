@@ -69,7 +69,8 @@ class Window(QMainWindow, Ui_MainWindow):
     def resize_format_list(self):
         formats = self.progress.progress_updater.downloader.get_supported_formats()
         self.FormatList.addItems(formats)
-        self.FormatList.setFixedSize(self.FormatLabel.size().width(), self.FormatList.sizeHintForRow(0)*(len(formats) + 1))
+        # Extend the width of the list by the width of the scrollbar. The height is 8 rows
+        self.FormatList.setFixedSize(self.FormatList.size().width() + self.FormatList.verticalScrollBar().size().height(), self.FormatList.sizeHintForRow(0) * 8)
 
     def choose_path(self, _):
         directory = QFileDialog.getExistingDirectory(self, self.tr("Select Directory"), self.FolderText.text(),
