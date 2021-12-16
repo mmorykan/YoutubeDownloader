@@ -1,16 +1,16 @@
 from __future__ import unicode_literals
-from yt_dlp import YoutubeDL, FFmpegExtractAudioPP
+from yt_dlp import YoutubeDL, FFmpegExtractAudioPP, FFmpegVideoConvertorPP, postprocessor
 from download_logger import Logger
 import os, sys
 from subprocess import Popen
 
 
-class YoutubeDownloader():
+class YoutubeDownloader:
     """
     This class contains a single YoutubeDL instance from yt-dlp that downloads audio from videos, 
     gets info from them, and trims the audio file after download
     """
-
+    
     def __init__(self):
         # If the app running in a bundled state, we may need absolute paths to find the ffmpeg binaries
         self.ffmpeg_location = this_script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -19,15 +19,14 @@ class YoutubeDownloader():
             self.ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_' + platform, 'bin')
 
         self.ext = 'webm'
+        self.video_formats = set(FFmpegVideoConvertorPP.SUPPORTED_EXTS) - {'mka'}
         self.youtube_downloader = YoutubeDL({
                                             'ffmpeg_location': self.ffmpeg_location,  # Need path to ffmpeg
-                                            'extractaudio': True,
                                             'noplaylist': True,
                                             'nocheckcertificate': True,
                                             'cachedir': False,
                                             'logger': Logger(),
                                             'overwrites': True,
-                                            'format': 'bestaudio/best',
                                             'progress_hooks': [self.progress]
                                             })
 
@@ -38,24 +37,33 @@ class YoutubeDownloader():
         because cachedir option may not work yet.
         """
 
-        # Sets the format and download path in the YoutubeDL object
         self.youtube_downloader.params['keepvideo'] = data['keep_video'] or data['trim_video']
         self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
         metadata_args = self.get_metadata_args(data['metadata'])
         self.youtube_downloader.params['postprocessor_args'] = self.get_trim_video_args(data['start_time'], data['end_time']) + metadata_args
-        self.youtube_downloader.add_post_processor(FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format']))
-        
-        # Must run yt-dlp --rm-cache-dir on command line when 403 error or YoutubeDL().cache.remove() in python
+
+        # Need better code here
+        if data['audio_and_video']:
+            format_ = 'best'
+            preferred_format = data['format'] if data['format'] in self.video_formats else 'mp4'
+            post_processor = FFmpegVideoConvertorPP(self.youtube_downloader, preferedformat=preferred_format)
+        else:
+            format_ = 'bestaudio/best'
+            post_processor = FFmpegExtractAudioPP(self.youtube_downloader, preferredcodec=data['format'])
+
+        self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(format_)
+        self.youtube_downloader.add_post_processor(post_processor)
+
         self.youtube_downloader.cache.remove()
         self.youtube_downloader.download([data['url']])
 
-        if data['keep_video'] or data['trim_video']:
-            if data['trim_video']:
-                args = self.youtube_downloader.params['postprocessor_args']
-            elif data['keep_video']:
-                args = metadata_args
-            self.modify_original(args, data['path'], data['filename'])
+        # if data['keep_video'] or data['trim_video']:
+        #     if data['trim_video']:
+        #         args = self.youtube_downloader.params['postprocessor_args']
+        #     elif data['keep_video']:
+        #         args = metadata_args
+        #     self.modify_original(args, data['path'], data['filename'])
         
     def get_info(self, url):
         """
@@ -119,4 +127,4 @@ class YoutubeDownloader():
 
     @staticmethod
     def get_supported_formats():
-        return FFmpegExtractAudioPP.SUPPORTED_EXTS
+        return set(FFmpegExtractAudioPP.SUPPORTED_EXTS).union(set(FFmpegVideoConvertorPP.SUPPORTED_EXTS))
