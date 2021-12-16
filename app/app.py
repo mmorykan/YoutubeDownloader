@@ -46,8 +46,6 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FolderButton.clicked.connect(self.choose_path)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
-        self.KeepOriginalBox.stateChanged.connect(self.save_keep_video)
-        self.TrimOriginalBox.stateChanged.connect(self.trim_original)
 
     def setup_info_button(self):
         self.InfoButton.setStyleSheet('background-color: white')
@@ -60,12 +58,6 @@ class Window(QMainWindow, Ui_MainWindow):
         for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time):
             dialog.setWindowIcon(icon)
 
-    def save_keep_video(self):
-        self.settings.setValue('keep_video', self.KeepOriginalBox.isChecked())
-
-    def trim_original(self):
-        self.settings.setValue('trim_video', self.TrimOriginalBox.isChecked())
-
     def resize_format_list(self):
         formats = self.progress.progress_updater.downloader.get_supported_formats()
         self.FormatList.addItems(formats)
@@ -77,11 +69,9 @@ class Window(QMainWindow, Ui_MainWindow):
                                        QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if directory:
             self.FolderText.setText(directory)
-            self.settings.setValue('directory', directory)
 
     def choose_format(self, index):
         self.format = index.data()
-        self.settings.setValue('format_row', index.row())
 
     def download(self):
         url = self.UrlText.text()
@@ -122,7 +112,7 @@ class Window(QMainWindow, Ui_MainWindow):
                         'format': self.format,
                         'keep_video': self.KeepOriginalBox.isChecked(),
                         'trim_video': self.TrimOriginalBox.isChecked(),
-                        'audio_and_video': True}
+                        'audio_and_video': self.AudioAndVideoBox.isChecked()}
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
@@ -159,6 +149,15 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             return formatted
 
+    def write_settings(self):
+        boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
+        for key, box in boxes:
+            self.settings.setValue(key, box.isChecked())
+
+        self.settings.setValue('directory', self.FolderText.text())
+        self.settings.setValue('format_row', self.FormatList.currentRow())
+
+        
     def restore_settings(self):
         """
         Loads the previously chosen downloads folder and file format
@@ -169,8 +168,14 @@ class Window(QMainWindow, Ui_MainWindow):
         row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row())
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
-        self.KeepOriginalBox.setChecked(self.settings.value('keep_video', False))
-        self.TrimOriginalBox.setChecked(self.settings.value('trim_video', False))
+
+        boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
+        for key, box in boxes:
+            box.setChecked(self.settings.value(key), False)
+
+    def closeEvent(self, event):
+        self.write_settings()
+        event.accept()
 
 
 if __name__ == "__main__":

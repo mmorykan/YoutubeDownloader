@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>680</width>
+    <width>671</width>
     <height>299</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>681</width>
+      <width>671</width>
       <height>301</height>
      </rect>
     </property>
@@ -200,7 +200,7 @@
        <rect>
         <x>500</x>
         <y>0</y>
-        <width>171</width>
+        <width>258</width>
         <height>211</height>
        </rect>
       </property>
@@ -242,6 +242,13 @@
         <widget class="QCheckBox" name="TrimOriginalBox">
          <property name="text">
           <string>Keep Trimmed Original</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="AudioAndVideoBox">
+         <property name="text">
+          <string>Keep Video</string>
          </property>
         </widget>
        </item>
