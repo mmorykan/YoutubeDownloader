@@ -43,6 +43,9 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.ProgressLabel.setText((self.filename if len(self.filename) < 40 else self.filename[:40] + '... ') + '\t' + 'ETA: ' + eta + ', ' + speed + ', ' + size)
         self.ProgressBar.setValue(int(percentage*10))
         self.ProgressBar.setFormat("{:.02f}%".format(percentage))
+        if percentage > 95:
+            self.setWindowTitle('Converting...')
+
 
     def finished(self):
         self.SuccessButton.setEnabled(True)
@@ -54,3 +57,4 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.ProgressBar.setValue(0)
         self.ProgressBar.setFormat("{:.02f}%".format(0))
         self.SuccessButton.setEnabled(False)
+        self.setWindowTitle('Downloading...')
