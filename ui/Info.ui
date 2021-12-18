@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -78,10 +78,31 @@
       <item>
        <widget class="QLabel" name="FormatLabel">
         <property name="text">
-         <string>List Formats: Lists the available formats of the downloaded video. Default is .m4a</string>
+         <string>List Formats: Lists the available formats of the downloaded video. Default is .mp3</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Keep Original: Saves the originally downloaded file before the conversion to your specified format</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Keep Trimmed Original: Same as Keep Original with trimming applied to the original file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Keep Video: Downloads the video as well as the audio if specified format supports video</string>
         </property>
        </widget>
       </item>
