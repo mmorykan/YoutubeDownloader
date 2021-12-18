@@ -58,12 +58,12 @@ class YoutubeDownloader:
         self.youtube_downloader.cache.remove()
         self.youtube_downloader.download([data['url']])
 
-        # if data['keep_video'] or data['trim_video']:
-        #     if data['trim_video']:
-        #         args = self.youtube_downloader.params['postprocessor_args']
-        #     elif data['keep_video']:
-        #         args = metadata_args
-        #     self.modify_original(args, data['path'], data['filename'])
+        if data['keep_video'] or data['trim_video']:
+            if data['trim_video']:
+                args = self.youtube_downloader.params['postprocessor_args']
+            elif data['keep_video']:
+                args = metadata_args
+            self.modify_original(args, data['path'], data['filename'])
         
     def get_info(self, url):
         """
@@ -123,7 +123,6 @@ class YoutubeDownloader:
         """
 
         if song['status'] == 'finished':
-            # self.ext = song['info_dict']['audio_ext']
             self.ext = song['info_dict']['ext']
 
     @staticmethod
