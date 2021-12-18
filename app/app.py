@@ -165,13 +165,13 @@ class Window(QMainWindow, Ui_MainWindow):
 
         directory = self.settings.value("directory", os.path.expanduser('~'))
         self.FolderText.setText(directory)
-        row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row())
+        row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row(), int)
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
 
         boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
         for key, box in boxes:
-            box.setChecked(self.settings.value(key, False))
+            box.setChecked(self.settings.value(key, False, bool))
 
     def closeEvent(self, event):
         self.write_settings()
