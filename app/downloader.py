@@ -7,8 +7,8 @@ from subprocess import Popen
 
 class YoutubeDownloader:
     """
-    This class contains a single YoutubeDL instance from yt-dlp that downloads audio from videos, 
-    gets info from them, and trims the audio file after download.
+    This class contains a single YoutubeDL instance from yt-dlp that downloads audio/video from a youtube url. 
+    Also adds metadata to the downloaded file and trims it.
     """
     
     def __init__(self):
@@ -53,9 +53,20 @@ class YoutubeDownloader:
         self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format']))
 
         self.youtube_downloader.cache.remove()
-        self.youtube_downloader.download([data['url']])
+        self.youtube_downloader.download([data['url']])            
 
         if keep_original_video:
+            if data['format'] == self.ext:
+                current_file = os.path.join(data['path'], data['filename'] + '.' + self.ext)
+                renamed_file = current_file.replace('.', '_original.')
+                os.rename(current_file, renamed_file)
+                
+                proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', renamed_file] + \
+                                self.youtube_downloader.params['postprocessor_args'] + \
+                                ['-c', 'copy', current_file])
+                proc.wait()
+                data['filename'] = renamed_file.rsplit('.', 1)[0]
+
             self.modify_original(self.youtube_downloader.params['postprocessor_args'] if data['trim_video'] else metadata_args, data['path'], data['filename'])
 
     def get_format_and_postprocessor(self, chosen_format, audio_and_video):
@@ -116,7 +127,7 @@ class YoutubeDownloader:
         """
 
         current_file = os.path.join(path, filename + '.' + self.ext)
-        output_file = os.path.join(path, filename + '_edited.' + self.ext)  # Temp file to be written to and replaced
+        output_file = current_file.replace('.', '_edited.')  # Temp file to be written to and replaced
         proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', current_file] + \
                         postprocessor_args + \
                         ['-c', 'copy', output_file])
