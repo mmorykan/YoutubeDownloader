@@ -35,6 +35,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.info = Info()
         self.invalid_time = InvalidTime()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
+        self.audio_and_video_formats = set()
         self.connect_signals_slots()
         self.setup_info_button()
         self.set_icons()
@@ -59,7 +60,7 @@ class Window(QMainWindow, Ui_MainWindow):
             dialog.setWindowIcon(icon)
 
     def resize_format_list(self):
-        formats = self.progress.progress_updater.downloader.get_supported_formats()
+        formats, self.audio_and_video_formats = self.progress.progress_updater.downloader.get_supported_formats()
         self.FormatList.addItems(formats)
         # Extend the width of the list by the width (height) of the scrollbar. The height is 8 rows
         self.FormatList.setFixedSize(self.FormatList.size().width() + self.FormatList.verticalScrollBar().size().height(), self.FormatList.sizeHintForRow(0) * 8)
@@ -72,6 +73,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def choose_format(self, index):
         self.format = index.data()
+        self.AudioAndVideoBox.setEnabled(self.format in self.audio_and_video_formats)
 
     def download(self):
         url = self.UrlText.text()
@@ -150,6 +152,11 @@ class Window(QMainWindow, Ui_MainWindow):
             return formatted
 
     def write_settings(self):
+        """
+        Save all check boxes, directory, and format in QSettings.
+        Only called in closeEvent write before the program terminates.
+        """
+
         boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
         for key, box in boxes:
             self.settings.setValue(key, box.isChecked())
@@ -157,10 +164,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.settings.setValue('directory', self.FolderText.text())
         self.settings.setValue('format_row', self.FormatList.currentRow())
 
-        
     def restore_settings(self):
         """
-        Loads the previously chosen downloads folder and file format
+        Loads the previously chosen downloads folder, format, and checkbox settings.
+        Only called in constructor when program is run.
         """
 
         directory = self.settings.value("directory", os.path.expanduser('~'))
@@ -173,7 +180,13 @@ class Window(QMainWindow, Ui_MainWindow):
         for key, box in boxes:
             box.setChecked(self.settings.value(key, False, bool))
 
+        self.AudioAndVideoBox.setEnabled(self.format in self.audio_and_video_formats)
+
     def closeEvent(self, event):
+        """
+        Remember to save all settings in QSettings upon termination.
+        Only called when the main window is closed.
+        """
         self.write_settings()
         event.accept()
 
