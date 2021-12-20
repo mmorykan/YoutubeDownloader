@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from posixpath import abspath
 from yt_dlp import YoutubeDL, FFmpegExtractAudioPP, FFmpegVideoConvertorPP
 from download_logger import Logger
 import os, sys
@@ -49,9 +48,9 @@ class YoutubeDownloader:
         self.youtube_downloader.params['postprocessor_args'] = self.get_trim_video_args(data['start_time'], data['end_time']) + metadata_args
 
         format_, post_processor_class = self.get_format_and_postprocessor(data['format'], data['audio_and_video'])
-
+ 
         self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(format_)
-        self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format']))
+        self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format']))  # Check durationPP and timestampPP
 
         self.youtube_downloader.cache.remove()
         self.youtube_downloader.download([data['url']])            
@@ -71,7 +70,6 @@ class YoutubeDownloader:
 
         return format_, post_processor_class
 
-        
     def get_info(self, url):
         """
         Returns a set of the title and duration of the video.
