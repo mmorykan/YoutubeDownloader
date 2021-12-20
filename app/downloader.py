@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from posixpath import abspath
 from yt_dlp import YoutubeDL, FFmpegExtractAudioPP, FFmpegVideoConvertorPP
 from download_logger import Logger
 import os, sys
@@ -56,18 +57,7 @@ class YoutubeDownloader:
         self.youtube_downloader.download([data['url']])            
 
         if keep_original_video:
-            if data['format'] == self.ext:
-                current_file = os.path.join(data['path'], data['filename'] + '.' + self.ext)
-                renamed_file = current_file.replace('.', '_original.')
-                os.rename(current_file, renamed_file)
-                
-                proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', renamed_file] + \
-                                self.youtube_downloader.params['postprocessor_args'] + \
-                                ['-c', 'copy', current_file])
-                proc.wait()
-                data['filename'] = renamed_file.rsplit('.', 1)[0]
-
-            self.modify_original(self.youtube_downloader.params['postprocessor_args'] if data['trim_video'] else metadata_args, data['path'], data['filename'])
+            self.modify_original(self.youtube_downloader.params['postprocessor_args'] if data['trim_video'] else metadata_args, data['path'], data['filename'], data['format'])
 
     def get_format_and_postprocessor(self, chosen_format, audio_and_video):
         """
@@ -120,19 +110,34 @@ class YoutubeDownloader:
 
         return trim_args
 
-    def modify_original(self, postprocessor_args, path, filename):
+    def modify_original(self, postprocessor_args, path, filename, format_):
         """
         If the user wants to keep the originally downloaded file before post processing,
         we can apply all post processing to the original file as well.
         """
 
+        if format_ == self.ext:
+            current_file = os.path.join(path, filename + '.' + self.ext)
+            renamed_file = current_file.replace('.', '_original.')
+            os.rename(current_file, renamed_file)
+            
+            self.run_ffmpeg(renamed_file, current_file, self.youtube_downloader.params['postprocessor_args'])
+
+            filename = renamed_file.rsplit('.', 1)[0]
+
         current_file = os.path.join(path, filename + '.' + self.ext)
         output_file = current_file.replace('.', '_edited.')  # Temp file to be written to and replaced
+        
+        self.run_ffmpeg(current_file, output_file, postprocessor_args)
+
+        os.replace(output_file, current_file)
+
+    def run_ffmpeg(self, current_file, output_file, postprocessor_args):
+
         proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', current_file] + \
                         postprocessor_args + \
                         ['-c', 'copy', output_file])
         proc.wait()
-        os.replace(output_file, current_file)
 
     def progress(self, song):
         """

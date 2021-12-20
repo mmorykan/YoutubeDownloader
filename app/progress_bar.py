@@ -48,9 +48,9 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
 
 
     def finished(self):
-        self.SuccessButton.setEnabled(True)
         self.thread.quit()
         self.thread.wait()  # Waits for the thread to terminate after being quit
+        self.SuccessButton.setEnabled(True)
 
     def reset(self):
         self.ProgressLabel.setText('')
