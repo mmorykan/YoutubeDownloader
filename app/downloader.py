@@ -123,7 +123,7 @@ class YoutubeDownloader:
 
         return renamed_file.rsplit('.', 1)[0]
 
-    def modify_original(self, postprocessor_args, path, filename, format_=False):
+    def modify_original(self, postprocessor_args, path, filename):
         """
         If the user wants to keep the originally downloaded file before post processing,
         we can apply all post processing to the original file as well.
@@ -137,6 +137,9 @@ class YoutubeDownloader:
         os.replace(output_file, current_file)
 
     def run_ffmpeg(self, current_file, output_file, postprocessor_args):
+        """
+        Applies post processing args to a file using subprocess.
+        """
 
         proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', current_file] + \
                         postprocessor_args + \
