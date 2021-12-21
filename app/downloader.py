@@ -50,13 +50,15 @@ class YoutubeDownloader:
         format_, post_processor_class = self.get_format_and_postprocessor(data['format'], data['audio_and_video'])
  
         self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(format_)
-        self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format']))  # Check durationPP and timestampPP
+        self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format'])) # pp args not applied when downloaded file is already in chosen format
 
         self.youtube_downloader.cache.remove()
-        self.youtube_downloader.download([data['url']])            
+        self.youtube_downloader.download([data['url']])   
 
-        if keep_original_video:
-            self.modify_original(self.youtube_downloader.params['postprocessor_args'] if data['trim_video'] else metadata_args, data['path'], data['filename'], data['format'])
+        if keep_original_video or data['format'] == self.ext:
+            if keep_original_video and data['format'] == self.ext: 
+                data['filename'] = self.get_post_processed_original(data['path'], data['filename'])
+            self.modify_original(self.youtube_downloader.params['postprocessor_args'] if data['trim_video'] or not keep_original_video else metadata_args, data['path'], data['filename'])
 
     def get_format_and_postprocessor(self, chosen_format, audio_and_video):
         """
@@ -108,20 +110,24 @@ class YoutubeDownloader:
 
         return trim_args
 
-    def modify_original(self, postprocessor_args, path, filename, format_):
+    def get_post_processed_original(self, path, filename):
+        """
+        Post processes an original file before and saves before the next postprocessing.
+        """
+
+        current_file = os.path.join(path, filename + '.' + self.ext)
+        renamed_file = current_file.replace('.', '_original.')
+        os.rename(current_file, renamed_file)
+        
+        self.run_ffmpeg(renamed_file, current_file, self.youtube_downloader.params['postprocessor_args'])
+
+        return renamed_file.rsplit('.', 1)[0]
+
+    def modify_original(self, postprocessor_args, path, filename, format_=False):
         """
         If the user wants to keep the originally downloaded file before post processing,
         we can apply all post processing to the original file as well.
         """
-
-        if format_ == self.ext:
-            current_file = os.path.join(path, filename + '.' + self.ext)
-            renamed_file = current_file.replace('.', '_original.')
-            os.rename(current_file, renamed_file)
-            
-            self.run_ffmpeg(renamed_file, current_file, self.youtube_downloader.params['postprocessor_args'])
-
-            filename = renamed_file.rsplit('.', 1)[0]
 
         current_file = os.path.join(path, filename + '.' + self.ext)
         output_file = current_file.replace('.', '_edited.')  # Temp file to be written to and replaced
