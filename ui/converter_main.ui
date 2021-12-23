@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>299</height>
+    <width>679</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>671</width>
+      <width>681</width>
       <height>301</height>
      </rect>
     </property>
@@ -200,8 +200,8 @@
        <rect>
         <x>500</x>
         <y>0</y>
-        <width>258</width>
-        <height>211</height>
+        <width>161</width>
+        <height>271</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -232,23 +232,44 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="KeepOriginalBox">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Audio:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="KeepOriginalAudioBox">
          <property name="text">
           <string>Keep Original</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="TrimOriginalBox">
+        <widget class="QCheckBox" name="TrimOriginalAudioBox">
          <property name="text">
-          <string>Keep Trimmed Original</string>
+          <string>Keep Original Trimmed</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="AudioAndVideoBox">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Keep Video</string>
+          <string>Video:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="KeepOriginalVideoBox">
+         <property name="text">
+          <string>Keep Original</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="TrimOriginalVideoBox">
+         <property name="text">
+          <string>Keep Original Trimmed</string>
          </property>
         </widget>
        </item>

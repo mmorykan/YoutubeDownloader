@@ -2,10 +2,11 @@ import sys, os
 
 # PyQt5 modules
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
-from PyQt5.QtCore import QSettings, QSize, Qt
+from PyQt5.QtCore import QSettings, Qt
 from PyQt5.QtGui import QIcon
 
 from darktheme.widget_template import DarkPalette
+from downloader import YoutubeDownloader
 import resources  # Must be imported for resource files such as icons
 
 from dialogs.converter_main_dialog import Ui_MainWindow
@@ -35,7 +36,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.info = Info()
         self.invalid_time = InvalidTime()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
-        self.audio_and_video_formats = set()
+        self.format = ''
+        self.audio_boxes = (self.KeepOriginalAudioBox, self.TrimOriginalAudioBox)
+        self.video_boxes = (self.KeepOriginalVideoBox, self.TrimOriginalVideoBox)
         self.connect_signals_slots()
         self.setup_info_button()
         self.set_icons()
@@ -60,10 +63,10 @@ class Window(QMainWindow, Ui_MainWindow):
             dialog.setWindowIcon(icon)
 
     def resize_format_list(self):
-        formats, self.audio_and_video_formats = self.progress.progress_updater.downloader.get_supported_formats()
+        formats = YoutubeDownloader.get_supported_formats()
         self.FormatList.addItems(formats)
         # Extend the width of the list by the width (height) of the scrollbar. The height is 8 rows
-        self.FormatList.setFixedSize(self.FormatList.size().width() + self.FormatList.verticalScrollBar().size().height(), self.FormatList.sizeHintForRow(0) * 8)
+        self.FormatList.setFixedSize(self.FormatList.size().width() + self.FormatList.verticalScrollBar().size().height(), self.FormatList.sizeHintForRow(0) * 5)
 
     def choose_path(self, _):
         directory = QFileDialog.getExistingDirectory(self, self.tr("Select Directory"), self.FolderText.text(),
@@ -73,7 +76,12 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def choose_format(self, index):
         self.format = index.data()
-        self.AudioAndVideoBox.setEnabled(self.format in self.audio_and_video_formats)
+        self.change_buttons(self.format in YoutubeDownloader.audio_formats, self.format in YoutubeDownloader.video_formats)
+             
+    def change_buttons(self, is_audio_format, is_video_format):
+        for audio_box, video_box in zip(self.audio_boxes, self.video_boxes):
+            audio_box.setEnabled(is_audio_format)
+            video_box.setEnabled(is_video_format) 
 
     def download(self):
         url = self.UrlText.text()
@@ -99,7 +107,7 @@ class Window(QMainWindow, Ui_MainWindow):
         if start_time:
             start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.minute * 60 + end_time_formatted.second) if end_time else data['duration'])
             if not start_time_formatted:
-                return
+                return 
 
         download_info = {'url': url,
                         'metadata': {
@@ -107,14 +115,16 @@ class Window(QMainWindow, Ui_MainWindow):
                             'artist': self.ArtistText.text(),
                             'genre': self.GenreText.text(),
                         },
+                        'options': {
+                            'keep_original': self.get_checked_and_enabled((self.KeepOriginalAudioBox, self.KeepOriginalVideoBox)),
+                            'trim_original': self.get_checked_and_enabled((self.TrimOriginalAudioBox, self.TrimOriginalVideoBox)),
+                            'audio_and_video': self.get_checked_and_enabled(self.audio_boxes) and self.get_checked_and_enabled(self.video_boxes)
+                        },
                         'start_time': start_time,
                         'end_time': end_time,
                         'path': path,
                         'filename': filename,
-                        'format': self.format,
-                        'keep_video': self.KeepOriginalBox.isChecked(),
-                        'trim_video': self.TrimOriginalBox.isChecked(),
-                        'audio_and_video': self.AudioAndVideoBox.isChecked()}
+                        'format': self.format}
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
@@ -126,6 +136,9 @@ class Window(QMainWindow, Ui_MainWindow):
         # Clear all fields except folder field
         for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText):
             field.clear()
+
+    def get_checked_and_enabled(self, boxes):
+        return any([box.isEnabled() and box.isChecked() for box in boxes])
 
     def __is_valid_url(self, url):
         # If a url is not valid, execute dialog and return False
@@ -157,7 +170,8 @@ class Window(QMainWindow, Ui_MainWindow):
         Only called in closeEvent write before the program terminates.
         """
 
-        boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
+        boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
+                 ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox))
         for key, box in boxes:
             self.settings.setValue(key, box.isChecked())
 
@@ -170,17 +184,18 @@ class Window(QMainWindow, Ui_MainWindow):
         Only called in constructor when program is run.
         """
 
-        directory = self.settings.value("directory", os.path.expanduser('~'))
+        directory = self.settings.value('directory', os.path.expanduser('~'))
         self.FolderText.setText(directory)
         row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row(), int)
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
 
-        boxes = (('keep_video', self.KeepOriginalBox), ('trim_video', self.TrimOriginalBox), ('audio_and_video', self.AudioAndVideoBox))
+        boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
+                 ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox))
         for key, box in boxes:
             box.setChecked(self.settings.value(key, False, bool))
 
-        self.AudioAndVideoBox.setEnabled(self.format in self.audio_and_video_formats)
+        self.change_buttons(self.format in YoutubeDownloader.audio_formats, self.format in YoutubeDownloader.video_formats)
 
     def closeEvent(self, event):
         """

@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
-from yt_dlp import YoutubeDL, FFmpegExtractAudioPP, FFmpegVideoConvertorPP
-from download_logger import Logger
 import os, sys
 from subprocess import Popen
+from yt_dlp import YoutubeDL, FFmpegExtractAudioPP, FFmpegVideoConvertorPP
+from download_logger import Logger
+from utils import get_metadata_args, get_trim_video_args
 
 
 class YoutubeDownloader:
@@ -11,6 +12,8 @@ class YoutubeDownloader:
     Also adds metadata to the downloaded file and trims it.
     """
     
+    video_formats, audio_formats = (set(FFmpegVideoConvertorPP.SUPPORTED_EXTS), set(FFmpegExtractAudioPP.SUPPORTED_EXTS))
+
     def __init__(self):
         # If the app running in a bundled state, we may need absolute paths to find the ffmpeg binaries
         self.ffmpeg_location = this_script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -19,8 +22,6 @@ class YoutubeDownloader:
             self.ffmpeg_location = os.path.join(os.path.dirname(this_script_dir), 'ffmpeg_' + platform, 'bin')
 
         self.ext = 'webm'
-        self.rejected_formats = {'mka'}
-        self.video_formats, self.audio_formats = (set(FFmpegVideoConvertorPP.SUPPORTED_EXTS) - self.rejected_formats, set(FFmpegExtractAudioPP.SUPPORTED_EXTS))
         self.audio_only, self.audio_and_video = (('bestaudio/best', FFmpegExtractAudioPP), ('best', FFmpegVideoConvertorPP))
         self.youtube_downloader = YoutubeDL({
                                             'ffmpeg_location': self.ffmpeg_location,  # Need path to ffmpeg
@@ -40,15 +41,15 @@ class YoutubeDownloader:
         because cachedir option may not work yet.
         """
 
-        keep_original_video = data['keep_video'] or data['trim_video']
+        keep_original_video = data['options']['keep_original'] or data['options']['trim_original']
         self.youtube_downloader.params['keepvideo'] = keep_original_video
         self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
-        metadata_args = self.get_metadata_args(data['metadata'])
-        self.youtube_downloader.params['postprocessor_args'] = self.get_trim_video_args(data['start_time'], data['end_time']) + metadata_args
+        metadata_args = get_metadata_args(data['metadata'])
+        self.youtube_downloader.params['postprocessor_args'] = get_trim_video_args(data['start_time'], data['end_time']) + metadata_args
 
-        format_, post_processor_class = self.get_format_and_postprocessor(data['format'], data['audio_and_video'])
- 
+        format_, post_processor_class = self.get_format_and_postprocessor(data['format'], data['options']['audio_and_video'])
+        
         self.youtube_downloader.format_selector = self.youtube_downloader.build_format_selector(format_)
         self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format'])) # pp args not applied when downloaded file is already in chosen format
 
@@ -58,7 +59,13 @@ class YoutubeDownloader:
         if keep_original_video or data['format'] == self.ext:
             if keep_original_video and data['format'] == self.ext: 
                 data['filename'] = self.get_post_processed_original(data['path'], data['filename'])
-            self.modify_original(self.youtube_downloader.params['postprocessor_args'] if data['trim_video'] or not keep_original_video else metadata_args, data['path'], data['filename'])
+            self.modify_original(self.youtube_downloader.params['postprocessor_args'] 
+                                if data['options']['trim_original'] or not keep_original_video 
+                                else metadata_args, 
+                                data['path'], 
+                                data['filename'])
+        
+        self.remove_post_processors()
 
     def get_format_and_postprocessor(self, chosen_format, audio_and_video):
         """
@@ -83,40 +90,13 @@ class YoutubeDownloader:
             'duration': meta['duration'] 
             }
 
-    def get_metadata_args(self, metadata):
-        """
-        Add metadata arguments to a list for postprocessing.
-        """
-
-        metadata_args = []
-        for metadata_type in ('title', 'artist', 'genre'):
-            if metadata[metadata_type]:
-                metadata_args += ['-metadata', f'{metadata_type}={metadata[metadata_type]}']
-
-        return metadata_args
-
-    def get_trim_video_args(self, start, end):
-        """
-        Add trimming times to a list for postprocessing.
-        """
-
-        trim_args = []
-        if start and end:
-            trim_args = ['-ss', start, '-to', end]
-        elif start:
-            trim_args = ['-ss', start]
-        elif end:
-            trim_args = ['-ss', '00:00:00', '-to', end]
-
-        return trim_args
-
     def get_post_processed_original(self, path, filename):
         """
-        Post processes an original file before and saves before the next postprocessing.
+        Post processes an original file and saves before the next postprocessing.
         """
 
         current_file = os.path.join(path, filename + '.' + self.ext)
-        renamed_file = current_file.replace('.', '_original.')
+        renamed_file = '_original.'.join(current_file.rsplit('.', 1))
         os.rename(current_file, renamed_file)
         
         self.run_ffmpeg(renamed_file, current_file, self.youtube_downloader.params['postprocessor_args'])
@@ -130,8 +110,8 @@ class YoutubeDownloader:
         """
 
         current_file = os.path.join(path, filename + '.' + self.ext)
-        output_file = current_file.replace('.', '_edited.')  # Temp file to be written to and replaced
-        
+        output_file = '_edited.'.join(current_file.rsplit('.', 1))  # Temp file to be written to and replaced
+
         self.run_ffmpeg(current_file, output_file, postprocessor_args)
 
         os.replace(output_file, current_file)
@@ -146,6 +126,14 @@ class YoutubeDownloader:
                         ['-c', 'copy', output_file])
         proc.wait()
 
+    def remove_post_processors(self):
+        """
+        Remember to remove the added post processors so that they don't exist for the next download.
+        """
+
+        for when in self.youtube_downloader._pps:
+            self.youtube_downloader._pps[when].clear()
+
     def progress(self, song):
         """
         Progress hook upon downloading. Only used for getting the file extension of best quality video.
@@ -154,12 +142,13 @@ class YoutubeDownloader:
         if song['status'] == 'finished':
             self.ext = song['info_dict']['ext']
 
-    def get_supported_formats(self):
+    @staticmethod
+    def get_supported_formats():
         """
-        Returns a list of all supported formats without duplicates, and then a set of the duplicates.
+        Returns a list of all supported formats without duplicates.
         Have to use a list for all formats in order to preserve order when displayed in the GUI.
         """
 
+        rejected_formats = {'mka'}
         formats = FFmpegExtractAudioPP.SUPPORTED_EXTS + FFmpegVideoConvertorPP.SUPPORTED_EXTS
-        return ([format_ for pos, format_ in enumerate(formats) if not (format_ in self.rejected_formats or format_ in formats[:pos])], 
-                self.video_formats.intersection(self.audio_formats))
+        return [format_ for pos, format_ in enumerate(formats) if not (format_ in rejected_formats or format_ in formats[:pos])]
