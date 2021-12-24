@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
+    <width>701</width>
     <height>338</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>20</x>
      <y>30</y>
-     <width>611</width>
+     <width>675</width>
      <height>277</height>
     </rect>
    </property>
@@ -88,21 +88,14 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Keep Original: Saves the originally downloaded file before the conversion to your specified format</string>
+         <string>Keep Original Audio/Video: Saves the originally downloaded file before the conversion to your specified format</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Keep Trimmed Original: Same as Keep Original with trimming applied to the original file</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Keep Video: Downloads the video as well as the audio if specified format supports video</string>
+         <string>Keep Trimmed Original Audio/Video: Same as Keep Original with trimming applied to the original file</string>
         </property>
        </widget>
       </item>

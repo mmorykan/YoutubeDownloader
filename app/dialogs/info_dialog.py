@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_InfoDialog(object):
     def setupUi(self, InfoDialog):
         InfoDialog.setObjectName("InfoDialog")
-        InfoDialog.resize(711, 338)
+        InfoDialog.resize(701, 338)
         self.layoutWidget = QtWidgets.QWidget(InfoDialog)
         self.layoutWidget.setGeometry(QtCore.QRect(20, 30, 675, 277))
         self.layoutWidget.setObjectName("layoutWidget")
