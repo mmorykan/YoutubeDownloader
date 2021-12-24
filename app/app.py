@@ -37,6 +37,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.invalid_time = InvalidTime()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
         self.format = ''
+        self.conversion_format = ''
         self.audio_boxes = (self.KeepOriginalAudioBox, self.TrimOriginalAudioBox)
         self.video_boxes = (self.KeepOriginalVideoBox, self.TrimOriginalVideoBox)
         self.connect_signals_slots()
@@ -48,6 +49,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def connect_signals_slots(self):
         self.DownloadButton.clicked.connect(self.download)
         self.FolderButton.clicked.connect(self.choose_path)
+        self.ChooseFilesButton.clicked.connect(self.choose_files)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
 
@@ -64,6 +66,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def resize_format_list(self):
         formats = YoutubeDownloader.get_supported_formats()
+        self.FormatBox.addItems(formats)
+        self.FormatBox.setStyleSheet('combobox-popup: 0')
         self.FormatList.addItems(formats)
         # Extend the width of the list by the width (height) of the scrollbar. The height is 8 rows
         self.FormatList.setFixedSize(self.FormatList.size().width() + self.FormatList.verticalScrollBar().size().height(), self.FormatList.sizeHintForRow(0) * 5)
@@ -73,6 +77,14 @@ class Window(QMainWindow, Ui_MainWindow):
                                        QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if directory:
             self.FolderText.setText(directory)
+    
+    def choose_files(self, _):
+        filter_ = ''
+        for format_ in YoutubeDownloader.get_supported_formats():
+            filter_ += ' *' + format_
+        files, _ = QFileDialog.getOpenFileNames(self, self.tr('Select Files'), os.path.expanduser('~'), 
+                                                f'Audio Files ({filter_})')
+        print(files)
 
     def choose_format(self, index):
         self.format = index.data()
@@ -177,6 +189,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.settings.setValue('directory', self.FolderText.text())
         self.settings.setValue('format_row', self.FormatList.currentRow())
+        self.settings.setValue('conversion_format', self.FormatBox.currentText())
 
     def restore_settings(self):
         """
@@ -189,6 +202,8 @@ class Window(QMainWindow, Ui_MainWindow):
         row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row(), int)
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
+        self.conversion_format = self.settings.value('conversion_format', 'mp3')
+        self.FormatBox.setCurrentText(self.conversion_format)
 
         boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
                  ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox))
