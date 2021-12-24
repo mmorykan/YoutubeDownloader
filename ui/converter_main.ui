@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="DownloadTab">
      <attribute name="title">
@@ -280,6 +280,64 @@
      <attribute name="title">
       <string>Edit File</string>
      </attribute>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>10</y>
+        <width>91</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="FileFormatLabel">
+         <property name="text">
+          <string>File Format:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="FormatBox"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>10</y>
+        <width>461</width>
+        <height>191</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QListWidget" name="FilesList"/>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>25</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="ChooseFilesButton">
+           <property name="text">
+            <string>Choose Files</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="ConvertButton">
+           <property name="text">
+            <string>Convert Files</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </widget>
   </widget>

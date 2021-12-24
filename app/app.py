@@ -48,6 +48,7 @@ class Window(QMainWindow, Ui_MainWindow):
         
     def connect_signals_slots(self):
         self.DownloadButton.clicked.connect(self.download)
+        self.ConvertButton.clicked.connect(self.convert)
         self.FolderButton.clicked.connect(self.choose_path)
         self.ChooseFilesButton.clicked.connect(self.choose_files)
         self.FormatList.clicked.connect(self.choose_format)
@@ -81,10 +82,12 @@ class Window(QMainWindow, Ui_MainWindow):
     def choose_files(self, _):
         filter_ = ''
         for format_ in YoutubeDownloader.get_supported_formats():
-            filter_ += ' *' + format_
+            filter_ += ' *.' + format_
         files, _ = QFileDialog.getOpenFileNames(self, self.tr('Select Files'), os.path.expanduser('~'), 
                                                 f'Audio Files ({filter_})')
-        print(files)
+        if files:
+            self.FilesList.addItems(files)
+            self.ConvertButton.setEnabled(True)
 
     def choose_format(self, index):
         self.format = index.data()
@@ -152,6 +155,12 @@ class Window(QMainWindow, Ui_MainWindow):
         # Clear all fields except folder field
         for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText):
             field.clear()
+    
+    def convert(self):
+        pass
+        
+        self.FilesList.clear()
+        self.ConvertButton.setEnabled(False)
 
     def get_checked_and_enabled(self, boxes):
         """
@@ -205,18 +214,20 @@ class Window(QMainWindow, Ui_MainWindow):
         Only called in constructor when program is run.
         """
 
-        directory = self.settings.value('directory', os.path.expanduser('~'))
+        directory = self.settings.value('directory', os.path.expanduser('~'), str)
         self.FolderText.setText(directory)
         row = self.settings.value('format_row', self.FormatList.indexFromItem(self.FormatList.findItems('mp3', Qt.MatchExactly)[0]).row(), int)
         self.FormatList.setCurrentRow(row)
         self.format = self.FormatList.item(row).text()
-        self.conversion_format = self.settings.value('conversion_format', 'mp3')
+        
+        self.conversion_format = self.settings.value('conversion_format', 'mp3', str)
         self.FormatBox.setCurrentText(self.conversion_format)
 
         boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
                  ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox))
         for key, box in boxes:
             box.setChecked(self.settings.value(key, False, bool))
+        self.ConvertButton.setEnabled(False)
 
         self.change_buttons(self.format in YoutubeDownloader.audio_formats, self.format in YoutubeDownloader.video_formats)
 

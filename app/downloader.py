@@ -150,4 +150,4 @@ class YoutubeDownloader:
         """
 
         formats = FFmpegExtractAudioPP.SUPPORTED_EXTS + FFmpegVideoConvertorPP.SUPPORTED_EXTS
-        return [format_ for pos, format_ in enumerate(formats) if not format_ not in formats[:pos]]
+        return [format_ for pos, format_ in enumerate(formats) if format_ not in formats[:pos]]

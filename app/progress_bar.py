@@ -46,7 +46,6 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         if percentage > 95:
             self.setWindowTitle('Converting...')
 
-
     def finished(self):
         self.thread.quit()
         self.thread.wait()  # Waits for the thread to terminate after being quit
