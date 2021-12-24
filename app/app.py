@@ -15,6 +15,7 @@ from file_exists import FileExists
 from url_needed import URLNeeded
 from info import Info
 from invalid_time import InvalidTime
+from converter import Converter
 from datetime import datetime
 import validators
 
@@ -36,6 +37,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.info = Info()
         self.invalid_time = InvalidTime()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
+        self.converter = Converter()
         self.format = ''
         self.conversion_format = ''
         self.audio_boxes = (self.KeepOriginalAudioBox, self.TrimOriginalAudioBox)
@@ -51,6 +53,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ConvertButton.clicked.connect(self.convert)
         self.FolderButton.clicked.connect(self.choose_path)
         self.ChooseFilesButton.clicked.connect(self.choose_files)
+        self.FormatBox.currentTextChanged.connect(self.choose_conversion_format)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
 
@@ -92,6 +95,9 @@ class Window(QMainWindow, Ui_MainWindow):
     def choose_format(self, index):
         self.format = index.data()
         self.change_buttons(self.format in YoutubeDownloader.audio_formats, self.format in YoutubeDownloader.video_formats)
+
+    def choose_conversion_format(self, format_):
+        self.conversion_format = format_
              
     def change_buttons(self, is_audio_format, is_video_format):
         """
@@ -157,8 +163,8 @@ class Window(QMainWindow, Ui_MainWindow):
             field.clear()
     
     def convert(self):
-        pass
-        
+        self.converter.convert([self.FilesList.item(i).text() for i in range(self.FilesList.count())], self.conversion_format)
+
         self.FilesList.clear()
         self.ConvertButton.setEnabled(False)
 
