@@ -123,7 +123,7 @@ class YoutubeDownloader:
 
         proc = Popen([os.path.join(self.ffmpeg_location, 'ffmpeg'), '-i', current_file] + \
                         postprocessor_args + \
-                        ['-c', 'copy', output_file])
+                        ['-c', 'copy', output_file], shell=True)
         proc.wait()
 
     def remove_post_processors(self):
