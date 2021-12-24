@@ -149,6 +149,5 @@ class YoutubeDownloader:
         Have to use a list for all formats in order to preserve order when displayed in the GUI.
         """
 
-        rejected_formats = {'mka'}
         formats = FFmpegExtractAudioPP.SUPPORTED_EXTS + FFmpegVideoConvertorPP.SUPPORTED_EXTS
-        return [format_ for pos, format_ in enumerate(formats) if not (format_ in rejected_formats or format_ in formats[:pos])]
+        return [format_ for pos, format_ in enumerate(formats) if not format_ not in formats[:pos]]

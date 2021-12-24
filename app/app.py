@@ -79,6 +79,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.change_buttons(self.format in YoutubeDownloader.audio_formats, self.format in YoutubeDownloader.video_formats)
              
     def change_buttons(self, is_audio_format, is_video_format):
+        """
+        Enable/Disable audio and video checkboxes depending on chosen format.
+        """
+
         for audio_box, video_box in zip(self.audio_boxes, self.video_boxes):
             audio_box.setEnabled(is_audio_format)
             video_box.setEnabled(is_video_format) 
@@ -138,6 +142,10 @@ class Window(QMainWindow, Ui_MainWindow):
             field.clear()
 
     def get_checked_and_enabled(self, boxes):
+        """
+        Return if any of the checkboxes in boxes are enables and checked.
+        """
+
         return any([box.isEnabled() and box.isChecked() for box in boxes])
 
     def __is_valid_url(self, url):
@@ -202,6 +210,7 @@ class Window(QMainWindow, Ui_MainWindow):
         Remember to save all settings in QSettings upon termination.
         Only called when the main window is closed.
         """
+
         self.write_settings()
         event.accept()
 
