@@ -83,6 +83,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.FolderText.setText(directory)
     
     def choose_files(self, _):
+        self.FilesList.clear()
         filter_ = ''
         for format_ in YoutubeDownloader.get_supported_formats():
             filter_ += ' *.' + format_
