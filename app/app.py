@@ -144,7 +144,8 @@ class Window(QMainWindow, Ui_MainWindow):
                         'options': {
                             'keep_original': self.get_checked_and_enabled((self.KeepOriginalAudioBox, self.KeepOriginalVideoBox)),
                             'trim_original': self.get_checked_and_enabled((self.TrimOriginalAudioBox, self.TrimOriginalVideoBox)),
-                            'audio_and_video': self.get_checked_and_enabled(self.audio_boxes) and self.get_checked_and_enabled(self.video_boxes)
+                            # 'audio_and_video': self.get_checked_and_enabled(self.audio_boxes) and self.get_checked_and_enabled(self.video_boxes)
+                            'audio_and_video': self.get_checked_and_enabled(self.video_boxes)
                         },
                         'start_time': start_time,
                         'end_time': end_time,
