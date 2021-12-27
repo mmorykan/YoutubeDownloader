@@ -84,9 +84,7 @@ class Window(QMainWindow, Ui_MainWindow):
     
     def choose_files(self, _):
         self.FilesList.clear()
-        filter_ = ''
-        for format_ in YoutubeDownloader.get_supported_formats():
-            filter_ += ' *.' + format_
+        filter_ = ' *.'.join(YoutubeDownloader.get_supported_formats()[1:])
         files, _ = QFileDialog.getOpenFileNames(self, self.tr('Select Files'), os.path.expanduser('~'), 
                                                 f'Audio Files ({filter_})')
         if files:
