@@ -118,8 +118,9 @@ class Window(QMainWindow, Ui_MainWindow):
         data = self.progress.progress_updater.downloader.get_info(url)
         
         # Default the filename if not entered
+        title = self.TitleText.text()
         if not filename:
-            filename = data['title']
+            filename = title if title else data['title']
 
         # Format end time if entered
         if end_time:
@@ -135,7 +136,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         download_info = {'url': url,
                         'metadata': {
-                            'title': self.TitleText.text(),
+                            'title': title,
                             'artist': self.ArtistText.text(),
                             'genre': self.GenreText.text(),
                         },

@@ -50,6 +50,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.thread.quit()
         self.thread.wait()  # Waits for the thread to terminate after being quit
         self.SuccessButton.setEnabled(True)
+        self.setWindowTitle('Download Complete')
 
     def reset(self):
         self.ProgressLabel.setText('')
