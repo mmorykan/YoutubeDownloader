@@ -41,8 +41,7 @@ class YoutubeDownloader:
         because cachedir option may not work yet.
         """
 
-        keep_original_video = data['options']['keep_original'] or data['options']['trim_original']
-        self.youtube_downloader.params['keepvideo'] = keep_original_video
+        keep_original_video = self.youtube_downloader.params['keepvideo'] = data['options']['keep_original'] or data['options']['trim_original']
         self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
         metadata_args = get_metadata_args(data['metadata'])
@@ -54,7 +53,7 @@ class YoutubeDownloader:
         self.youtube_downloader.add_post_processor(post_processor_class(self.youtube_downloader, data['format'])) # pp args not applied when downloaded file is already in chosen format
 
         self.youtube_downloader.cache.remove()
-        self.youtube_downloader.download([data['url']])   
+        self.youtube_downloader.download([data['url']])
 
         if keep_original_video or data['format'] == self.ext:
             if keep_original_video and data['format'] == self.ext: 
