@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
-    <height>300</height>
+    <width>709</width>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,9 +22,15 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>681</width>
-      <height>301</height>
+      <width>711</width>
+      <height>321</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="currentIndex">
      <number>0</number>
@@ -39,7 +45,7 @@
         <x>10</x>
         <y>0</y>
         <width>481</width>
-        <height>271</height>
+        <height>282</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout">
@@ -96,24 +102,24 @@
        <item row="3" column="1">
         <widget class="QLineEdit" name="GenreText"/>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="FilenameLabel">
          <property name="text">
           <string>Enter Filename: </string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QLineEdit" name="FilenameText"/>
        </item>
-       <item row="5" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="StartTimeLabel">
          <property name="text">
           <string>Start Time:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <widget class="QLineEdit" name="StartTimeText">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -123,14 +129,14 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="EndTimeLabel">
          <property name="text">
           <string>End Time:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QLineEdit" name="EndTimeText">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -140,21 +146,21 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <widget class="QPushButton" name="FolderButton">
          <property name="text">
           <string>Choose Folder</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <widget class="QLineEdit" name="FolderText">
          <property name="enabled">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="9" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QPushButton" name="DownloadButton">
@@ -193,6 +199,16 @@
          </item>
         </layout>
        </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="AlbumLabel">
+         <property name="text">
+          <string>Album:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="AlbumText"/>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
@@ -200,8 +216,8 @@
        <rect>
         <x>500</x>
         <y>0</y>
-        <width>161</width>
-        <height>271</height>
+        <width>258</width>
+        <height>293</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -273,6 +289,20 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Download Options:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="iTunesFormatBox">
+         <property name="text">
+          <string>iTunes Format (artist/album/song)</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -280,7 +310,7 @@
      <attribute name="title">
       <string>Edit File</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>540</x>
@@ -302,7 +332,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>40</x>
@@ -342,6 +372,31 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>UrlText</tabstop>
+  <tabstop>TitleText</tabstop>
+  <tabstop>ArtistText</tabstop>
+  <tabstop>GenreText</tabstop>
+  <tabstop>AlbumText</tabstop>
+  <tabstop>FilenameText</tabstop>
+  <tabstop>StartTimeText</tabstop>
+  <tabstop>EndTimeText</tabstop>
+  <tabstop>FolderButton</tabstop>
+  <tabstop>FolderText</tabstop>
+  <tabstop>DownloadButton</tabstop>
+  <tabstop>InfoButton</tabstop>
+  <tabstop>FormatList</tabstop>
+  <tabstop>KeepOriginalAudioBox</tabstop>
+  <tabstop>TrimOriginalAudioBox</tabstop>
+  <tabstop>KeepOriginalVideoBox</tabstop>
+  <tabstop>TrimOriginalVideoBox</tabstop>
+  <tabstop>FormatBox</tabstop>
+  <tabstop>FilesList</tabstop>
+  <tabstop>ChooseFilesButton</tabstop>
+  <tabstop>ConvertButton</tabstop>
+  <tabstop>iTunesFormatBox</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

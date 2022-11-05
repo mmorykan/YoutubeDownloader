@@ -42,6 +42,8 @@ class YoutubeDownloader:
         """
 
         keep_original_video = self.youtube_downloader.params['keepvideo'] = data['options']['keep_original'] or data['options']['trim_original']
+        if data['download_options']['itunes_format'] and not os.path.isdir(data['path']):
+            os.makedirs(data['path'])
         self.youtube_downloader.params['outtmpl'] = os.path.join(data['path'], data['filename'] + '.%(ext)s')
         self.youtube_downloader.outtmpl_dict = self.youtube_downloader.parse_outtmpl()  # Check yt-dlp __init__ for YoutubeDL.py 
         metadata_args = get_metadata_args(data['metadata'])
@@ -140,6 +142,10 @@ class YoutubeDownloader:
 
         if song['status'] == 'finished':
             self.ext = song['info_dict']['ext']
+
+    def ensure_path(self, path):
+        if not os.path.isdir(path):
+            os.makedirs(path)
 
     @staticmethod
     def get_supported_formats():

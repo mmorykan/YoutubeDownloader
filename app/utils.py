@@ -5,7 +5,7 @@ def get_metadata_args(metadata):
     """
 
     metadata_args = []
-    for metadata_type in ('title', 'artist', 'genre'):
+    for metadata_type in ('title', 'artist', 'genre', 'album'):
         if metadata[metadata_type]:
             metadata_args += ['-metadata', f'{metadata_type}={metadata[metadata_type]}']
 

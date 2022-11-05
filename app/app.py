@@ -111,14 +111,24 @@ class Window(QMainWindow, Ui_MainWindow):
         url = self.UrlText.text()
         if not self.__is_valid_url(url):
             return
-        path = self.FolderText.text()
+        title      = self.TitleText.text()
+        artist     = self.ArtistText.text()
+        genre      = self.GenreText.text()
+        album      = self.AlbumText.text()
         start_time = self.StartTimeText.text()
-        end_time = self.EndTimeText.text()
-        filename = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
-        data = self.progress.progress_updater.downloader.get_info(url)
-        
+        end_time   = self.EndTimeText.text()
+        path       = self.FolderText.text()
+        filename   = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
+        data       = self.progress.progress_updater.downloader.get_info(url)
+
+        if self.iTunesFormatBox.isChecked():
+            if not artist:
+                artist = 'Unknown Artist'
+            if not album:
+                album = 'Unknown Album'
+            path = os.path.join(path, artist, album)
+
         # Default the filename if not entered
-        title = self.TitleText.text()
         if not filename:
             filename = title if title else data['title']
 
@@ -137,14 +147,18 @@ class Window(QMainWindow, Ui_MainWindow):
         download_info = {'url': url,
                         'metadata': {
                             'title': title,
-                            'artist': self.ArtistText.text(),
-                            'genre': self.GenreText.text(),
+                            'artist': artist,
+                            'genre': genre,
+                            'album': album,
                         },
                         'options': {
                             'keep_original': self.get_checked_and_enabled((self.KeepOriginalAudioBox, self.KeepOriginalVideoBox)),
                             'trim_original': self.get_checked_and_enabled((self.TrimOriginalAudioBox, self.TrimOriginalVideoBox)),
                             # 'audio_and_video': self.get_checked_and_enabled(self.audio_boxes) and self.get_checked_and_enabled(self.video_boxes)
                             'audio_and_video': self.get_checked_and_enabled(self.video_boxes)
+                        },
+                        'download_options': {
+                            'itunes_format': self.iTunesFormatBox.isChecked(),
                         },
                         'start_time': start_time,
                         'end_time': end_time,
@@ -160,7 +174,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.progress.start_download(download_info)
         
         # Clear all fields except folder field
-        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.FilenameText, self.StartTimeText, self.EndTimeText):
+        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
             field.clear()
     
     def convert(self):
@@ -207,7 +221,8 @@ class Window(QMainWindow, Ui_MainWindow):
         """
 
         boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
-                 ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox))
+                 ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox),
+                 ('itunes_format', self.iTunesFormatBox))
         for key, box in boxes:
             self.settings.setValue(key, box.isChecked())
 
@@ -231,7 +246,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FormatBox.setCurrentText(self.conversion_format)
 
         boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
-                 ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox))
+                 ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox),
+                 ('itunes_format', self.iTunesFormatBox))
         for key, box in boxes:
             box.setChecked(self.settings.value(key, False, bool))
         self.ConvertButton.setEnabled(False)
