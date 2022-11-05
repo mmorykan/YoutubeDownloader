@@ -143,10 +143,6 @@ class YoutubeDownloader:
         if song['status'] == 'finished':
             self.ext = song['info_dict']['ext']
 
-    def ensure_path(self, path):
-        if not os.path.isdir(path):
-            os.makedirs(path)
-
     @staticmethod
     def get_supported_formats():
         """
