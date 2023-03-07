@@ -15,7 +15,9 @@ from file_exists import FileExists
 from url_needed import URLNeeded
 from info import Info
 from invalid_time import InvalidTime
+from application_doesnt_exist import ApplicationDoesntExist
 from converter import Converter
+from players.iTunesPlayer import iTunesPlayer
 from datetime import datetime
 import validators
 
@@ -36,12 +38,17 @@ class Window(QMainWindow, Ui_MainWindow):
         self.url_needed = URLNeeded()
         self.info = Info()
         self.invalid_time = InvalidTime()
+        self.application_doesnt_exist = ApplicationDoesntExist()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
         self.converter = Converter()
         self.format = ''
         self.conversion_format = ''
         self.audio_boxes = (self.KeepOriginalAudioBox, self.TrimOriginalAudioBox)
         self.video_boxes = (self.KeepOriginalVideoBox, self.TrimOriginalVideoBox)
+        self.player_boxes = {
+            self.AddToITunesBox: iTunesPlayer,
+        }
+        self.players = {}
         self.connect_signals_slots()
         self.setup_info_button()
         self.set_icons()
@@ -56,6 +63,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FormatBox.currentTextChanged.connect(self.choose_conversion_format)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
+        for player_box in self.player_boxes:
+            player_box.clicked.connect(self.connect_player)
 
     def setup_info_button(self):
         self.InfoButton.setStyleSheet('background-color: white')
@@ -65,7 +74,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def set_icons(self):
         icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
-        for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time):
+        for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time, self.application_doesnt_exist):
             dialog.setWindowIcon(icon)
 
     def resize_format_list(self):
@@ -81,7 +90,7 @@ class Window(QMainWindow, Ui_MainWindow):
                                        QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if directory:
             self.FolderText.setText(directory)
-    
+
     def choose_files(self, _):
         self.FilesList.clear()
         filter_ = ' *.'.join(YoutubeDownloader.get_supported_formats()[1:])
@@ -97,7 +106,30 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def choose_conversion_format(self, format_):
         self.conversion_format = format_
-             
+
+    def connect_player(self, checked, box=None):
+        button = box if box else self.sender()
+        player_type = self.player_boxes[button]
+        if checked:
+            player = player_type.connect()
+            if not player:
+                self.application_doesnt_exist.set_message(player_type.player_name)
+                self.application_doesnt_exist.exec()
+                button.setChecked(False)
+                for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
+                    listwidget.clear()
+            else:
+                self.players[player.player_name] = player
+                self.PlaylistListWidget.addItems(player.get_playlists())
+                self.ArtistListWidget.addItems(player.get_artists())
+                self.GenreListWidget.addItems(player.get_genres())
+                self.AlbumListWidget.addItems(player.get_albums())
+        elif player_type.player_name in self.players:
+            self.players[player_type.player_name].disconnect()
+            del self.players[player_type.player_name]
+            for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
+                listwidget.clear()
+
     def change_buttons(self, is_audio_format, is_video_format):
         """
         Enable/Disable audio and video checkboxes depending on chosen format.
@@ -105,7 +137,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         for audio_box, video_box in zip(self.audio_boxes, self.video_boxes):
             audio_box.setEnabled(is_audio_format)
-            video_box.setEnabled(is_video_format) 
+            video_box.setEnabled(is_video_format)
 
     def download(self):
         url = self.UrlText.text()
@@ -119,7 +151,7 @@ class Window(QMainWindow, Ui_MainWindow):
         end_time   = self.EndTimeText.text()
         path       = self.FolderText.text()
         filename   = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
-        data       = self.progress.progress_updater.downloader.get_info(url)
+        # data       = self.progress.progress_updater.downloader.get_info(url)
 
         if self.iTunesFormatBox.isChecked():
             if not artist:
@@ -142,15 +174,25 @@ class Window(QMainWindow, Ui_MainWindow):
         if start_time:
             start_time_formatted = self.__is_valid_time(start_time, (end_time_formatted.minute * 60 + end_time_formatted.second) if end_time else data['duration'])
             if not start_time_formatted:
-                return 
+                return
+
+        metadata = {
+                    'title': title,
+                    'artist': artist,
+                    'genre': genre,
+                    'album': album,
+                }
+        if self.players:
+            lists = (('artist', self.ArtistListWidget), ('genre', self.GenreListWidget), ('album', self.AlbumListWidget))
+            for name, item in lists:
+                current = item.currentItem()
+                if current:
+                    metadata[name] = current.text()
+            items = self.PlaylistListWidget.selectedItems()
+            metadata['playlists'] = [item.text() for item in items]
 
         download_info = {'url': url,
-                        'metadata': {
-                            'title': title,
-                            'artist': artist,
-                            'genre': genre,
-                            'album': album,
-                        },
+                        'metadata': metadata,
                         'options': {
                             'keep_original': self.get_checked_and_enabled((self.KeepOriginalAudioBox, self.KeepOriginalVideoBox)),
                             'trim_original': self.get_checked_and_enabled((self.TrimOriginalAudioBox, self.TrimOriginalVideoBox)),
@@ -159,6 +201,7 @@ class Window(QMainWindow, Ui_MainWindow):
                         },
                         'download_options': {
                             'itunes_format': self.iTunesFormatBox.isChecked(),
+                            'players': self.players.values(),
                         },
                         'start_time': start_time,
                         'end_time': end_time,
@@ -172,11 +215,11 @@ class Window(QMainWindow, Ui_MainWindow):
                 self.progress.start_download(download_info)
         else:
             self.progress.start_download(download_info)
-        
+
         # Clear all fields except folder field
         for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
             field.clear()
-    
+
     def convert(self):
         self.converter.convert([self.FilesList.item(i).text() for i in range(self.FilesList.count())], self.conversion_format)
 
@@ -222,7 +265,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
                  ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox),
-                 ('itunes_format', self.iTunesFormatBox))
+                 ('itunes_format', self.iTunesFormatBox), ('add_to_itunes', self.AddToITunesBox))
         for key, box in boxes:
             self.settings.setValue(key, box.isChecked())
 
@@ -245,11 +288,20 @@ class Window(QMainWindow, Ui_MainWindow):
         self.conversion_format = self.settings.value('conversion_format', 'mp3', str)
         self.FormatBox.setCurrentText(self.conversion_format)
 
-        boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
+        format_boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
                  ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox),
                  ('itunes_format', self.iTunesFormatBox))
-        for key, box in boxes:
+        
+        player_boxes = (('add_to_itunes', self.AddToITunesBox),)
+
+        for key, box in format_boxes:
             box.setChecked(self.settings.value(key, False, bool))
+
+        for key, box in player_boxes:
+            is_checked = self.settings.value(key, False, bool)
+            box.setChecked(is_checked)
+            self.connect_player(is_checked, box=box)
+
         self.ConvertButton.setEnabled(False)
 
         self.change_buttons(self.format in YoutubeDownloader.audio_formats, self.format in YoutubeDownloader.video_formats)

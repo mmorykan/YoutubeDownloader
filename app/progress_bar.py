@@ -1,3 +1,4 @@
+import os
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QThread
 from dialogs.progress_bar_dialog import Ui_ProgressBarDialog
@@ -18,6 +19,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.progress_updater = DownloadProgressThread()
         self.thread = QThread()
         self.connect_signals_slots()
+        self.data = {}
 
     def connect_signals_slots(self):
         # Connect progress signal pyqtSignal to update progress function
@@ -34,7 +36,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         """
 
         self.reset()
-        self.progress_updater.song_data = data  # Just a pass through
+        self.data = self.progress_updater.song_data = data  # Just a pass through
         self.filename = data['filename'] + '.' + data['format']
         self.show()
         self.thread.start()
@@ -49,6 +51,7 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
     def finished(self):
         self.thread.quit()
         self.thread.wait()  # Waits for the thread to terminate after being quit
+        self.add_to_players()  # TODO: Should probably be in its own thread somehow
         self.SuccessButton.setEnabled(True)
         self.setWindowTitle('Download Complete')
 
@@ -58,3 +61,12 @@ class ProgessBar(QDialog, Ui_ProgressBarDialog):
         self.ProgressBar.setFormat("{:.02f}%".format(0))
         self.SuccessButton.setEnabled(False)
         self.setWindowTitle('Downloading...')
+
+    def add_to_players(self):
+        self.setWindowTitle('Adding to ' + ', '.join([player.player_name for player in self.data['download_options']['players']]))
+        track = os.path.join(self.data['path'], self.data['filename'] + '.' + self.data['format'])
+        for player in self.data['download_options']['players']:
+            player.add_to_library(track)
+            if 'playlists' in self.data['metadata']:
+                for playlist in self.data['metadata']['playlists']:
+                    player.add_to_playlist(playlist, track)

@@ -1,3 +1,4 @@
+import os
 from PyQt5.QtCore import QThread, pyqtSignal
 from downloader import YoutubeDownloader
 
@@ -18,7 +19,7 @@ class DownloadProgressThread(QThread):
         self.song_data = {}
         self.downloader = YoutubeDownloader()
         self.downloader.youtube_downloader.add_progress_hook(self.progress_bar)
-        
+
     def download(self):
         self.downloader.download(self.song_data)
 
