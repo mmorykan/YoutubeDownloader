@@ -19,28 +19,27 @@ class iTunesPlayer:
         
         return sorted([playlist.name for playlist in playlists if playlist.name not in self.excluded_playlists])
 
-    def get_artists(self):
+    def get_artists(self) -> list[str]:
         artists = {track.Artist for track in self.main_playlist.Tracks}
         artists.difference_update(self.exluded_info)
         return sorted(list(artists))
 
-    def get_genres(self):
+    def get_genres(self) -> list[str]:
         genres = {track.Genre for track in self.main_playlist.Tracks}
         genres.difference_update(self.exluded_info)
         return sorted(list(genres))
 
-    def get_albums(self):
+    def get_albums(self) -> list[str]:
         albums = {track.Album for track in self.main_playlist.Tracks}
         albums.difference_update(self.exluded_info)
         return sorted(list(albums))
 
-    def add_to_playlist(self, playlist, filename):
+    def add_to_playlist(self, playlist: str, filename: str ) -> None:
         playlists = self.main_library.Playlists
         playlist = playlists.ItemByName(playlist)
         playlist.AddFile(filename)
 
-    def add_to_library(self, filename):
-        print(filename)
+    def add_to_library(self, filename: str) -> None:
         self.main_playlist.AddFile(filename)
 
     @classmethod

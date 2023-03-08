@@ -265,7 +265,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
                  ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox),
-                 ('itunes_format', self.iTunesFormatBox), ('add_to_itunes', self.AddToITunesBox))
+                 ('itunes_format', self.iTunesFormatBox),)
         for key, box in boxes:
             self.settings.setValue(key, box.isChecked())
 
@@ -291,16 +291,9 @@ class Window(QMainWindow, Ui_MainWindow):
         format_boxes = (('keep_audio', self.KeepOriginalAudioBox), ('trim_audio', self.TrimOriginalAudioBox),
                  ('keep_video', self.KeepOriginalVideoBox), ('trim_video', self.TrimOriginalVideoBox),
                  ('itunes_format', self.iTunesFormatBox))
-        
-        player_boxes = (('add_to_itunes', self.AddToITunesBox),)
 
         for key, box in format_boxes:
             box.setChecked(self.settings.value(key, False, bool))
-
-        for key, box in player_boxes:
-            is_checked = self.settings.value(key, False, bool)
-            box.setChecked(is_checked)
-            self.connect_player(is_checked, box=box)
 
         self.ConvertButton.setEnabled(False)
 
