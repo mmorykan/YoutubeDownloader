@@ -151,7 +151,7 @@ class Window(QMainWindow, Ui_MainWindow):
         end_time   = self.EndTimeText.text()
         path       = self.FolderText.text()
         filename   = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
-        # data       = self.progress.progress_updater.downloader.get_info(url)
+        data       = self.progress.progress_updater.downloader.get_info(url)
 
         if self.iTunesFormatBox.isChecked():
             if not artist:
