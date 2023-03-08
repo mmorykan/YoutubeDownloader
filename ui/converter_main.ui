@@ -421,6 +421,13 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QPushButton" name="ClearPlaylistsButton">
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
@@ -448,6 +455,13 @@
                 </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="ClearArtistsButton">
+                <property name="text">
+                 <string>Clear</string>
                 </property>
                </widget>
               </item>
@@ -481,6 +495,13 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QPushButton" name="ClearGenresButton">
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
@@ -508,6 +529,13 @@
                 </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="ClearAlbumsButton">
+                <property name="text">
+                 <string>Clear</string>
                 </property>
                </widget>
               </item>

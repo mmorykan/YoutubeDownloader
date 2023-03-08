@@ -63,6 +63,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.FormatBox.currentTextChanged.connect(self.choose_conversion_format)
         self.FormatList.clicked.connect(self.choose_format)
         self.InfoButton.clicked.connect(self.info.exec)
+        self.ClearPlaylistsButton.clicked.connect(lambda: self.clear_metadata_selection(self.PlaylistListWidget))
+        self.ClearArtistsButton.clicked.connect(lambda: self.clear_metadata_selection(self.ArtistListWidget))
+        self.ClearGenresButton.clicked.connect(lambda: self.clear_metadata_selection(self.GenreListWidget))
+        self.ClearAlbumsButton.clicked.connect(lambda: self.clear_metadata_selection(self.AlbumListWidget))
         for player_box in self.player_boxes:
             player_box.clicked.connect(self.connect_player)
 
@@ -106,6 +110,10 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def choose_conversion_format(self, format_):
         self.conversion_format = format_
+
+    def clear_metadata_selection(self, list_widget):
+        for i in range(list_widget.count()):
+            list_widget.item(i).setSelected(False)
 
     def connect_player(self, checked, box=None):
         button = box if box else self.sender()
