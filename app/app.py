@@ -236,7 +236,7 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             self.progress.start_download(download_info)
 
-        cleanup_download()
+        self.cleanup_download()
 
     def convert(self):
         self.converter.convert([self.FilesList.item(i).text() for i in range(self.FilesList.count())], self.conversion_format)
@@ -275,7 +275,7 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             return formatted
 
-    def cleanup_download():
+    def cleanup_download(self):
         """
         Reformat list widgets with correct metadata.
         Clear text fields.
