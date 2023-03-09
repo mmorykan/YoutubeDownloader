@@ -12,6 +12,10 @@ class iTunesPlayer:
         self.main_playlist = self.player.LibraryPlaylist
         self.main_library = self.player.LibrarySource
         self.exluded_info = {'', ' '}
+        self.playlists = self.get_playlists()
+        self.artists = self.get_artists()
+        self.genres = self.get_genres()
+        self.albums = self.get_albums()
 
     def get_playlists(self) -> list[str]:
         mainLibrary = self.player.LibrarySource
@@ -22,17 +26,17 @@ class iTunesPlayer:
     def get_artists(self) -> list[str]:
         artists = {track.Artist for track in self.main_playlist.Tracks}
         artists.difference_update(self.exluded_info)
-        return sorted(list(artists))
+        return artists
 
     def get_genres(self) -> list[str]:
         genres = {track.Genre for track in self.main_playlist.Tracks}
         genres.difference_update(self.exluded_info)
-        return sorted(list(genres))
+        return genres
 
     def get_albums(self) -> list[str]:
         albums = {track.Album for track in self.main_playlist.Tracks}
         albums.difference_update(self.exluded_info)
-        return sorted(list(albums))
+        return albums
 
     def add_to_playlist(self, playlist: str, filename: str ) -> None:
         playlists = self.main_library.Playlists

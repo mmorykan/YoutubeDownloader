@@ -48,7 +48,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.player_boxes = {
             self.AddToITunesBox: iTunesPlayer,
         }
-        self.players = {}
+        self.player = None
         self.connect_signals_slots()
         self.setup_info_button()
         self.set_icons()
@@ -127,14 +127,14 @@ class Window(QMainWindow, Ui_MainWindow):
                 for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
                     listwidget.clear()
             else:
-                self.players[player.player_name] = player
-                self.PlaylistListWidget.addItems(player.get_playlists())
-                self.ArtistListWidget.addItems(player.get_artists())
-                self.GenreListWidget.addItems(player.get_genres())
-                self.AlbumListWidget.addItems(player.get_albums())
-        elif player_type.player_name in self.players:
-            self.players[player_type.player_name].disconnect()
-            del self.players[player_type.player_name]
+                self.player = player
+                self.PlaylistListWidget.addItems(player.playlists)
+                self.ArtistListWidget.addItems(sorted(list(player.artists)))
+                self.GenreListWidget.addItems(sorted(list(player.genres)))
+                self.AlbumListWidget.addItems(sorted(list(player.albums)))
+        elif self.player:
+            self.player.disconnect()
+            self.player = None
             for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
                 listwidget.clear()
 
@@ -148,15 +148,15 @@ class Window(QMainWindow, Ui_MainWindow):
             video_box.setEnabled(is_video_format)
 
     def download(self):
-        url = self.UrlText.text()
+        url = self.UrlText.text().strip()
         if not self.__is_valid_url(url):
             return
-        title      = self.TitleText.text()
-        artist     = self.ArtistText.text()
-        genre      = self.GenreText.text()
-        album      = self.AlbumText.text()
-        start_time = self.StartTimeText.text()
-        end_time   = self.EndTimeText.text()
+        title      = self.TitleText.text().strip()
+        artist     = self.ArtistText.text().strip()
+        genre      = self.GenreText.text().strip()
+        album      = self.AlbumText.text().strip()
+        start_time = self.StartTimeText.text().strip()
+        end_time   = self.EndTimeText.text().strip()
         path       = self.FolderText.text()
         filename   = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
         data       = self.progress.progress_updater.downloader.get_info(url)
@@ -190,12 +190,20 @@ class Window(QMainWindow, Ui_MainWindow):
                     'genre': genre,
                     'album': album,
                 }
-        if self.players:
-            lists = (('artist', self.ArtistListWidget), ('genre', self.GenreListWidget), ('album', self.AlbumListWidget))
-            for name, item in lists:
-                current = item.currentItem()
+        new_player_meta = set()
+        if self.player:
+            lists = {'artist': self.ArtistListWidget, 
+                     'genre': self.GenreListWidget,
+                     'album': self.AlbumListWidget,}
+            for name, list_widget in lists.items():
+                current = list_widget.currentItem()
                 if current:
                     metadata[name] = current.text()
+                else:
+                    meta = getattr(self.player, name+'s')
+                    if metadata[name] and metadata[name] not in meta:
+                        meta.add(metadata[name])
+                        new_player_meta.add(name)
             items = self.PlaylistListWidget.selectedItems()
             metadata['playlists'] = [item.text() for item in items]
 
@@ -209,7 +217,7 @@ class Window(QMainWindow, Ui_MainWindow):
                         },
                         'download_options': {
                             'itunes_format': self.iTunesFormatBox.isChecked(),
-                            'players': self.players.values(),
+                            'players': [self.player],
                         },
                         'start_time': start_time,
                         'end_time': end_time,
@@ -221,12 +229,14 @@ class Window(QMainWindow, Ui_MainWindow):
             self.file_exists.exec()
             if self.file_exists.overwrite_file:
                 self.progress.start_download(download_info)
+            elif new_player_meta:
+                for meta_type in new_player_meta:
+                    meta = getattr(self.player, meta_type+'s')
+                    meta.remove(metadata[meta_type])
         else:
             self.progress.start_download(download_info)
 
-        # Clear all fields except folder field
-        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
-            field.clear()
+        cleanup_download()
 
     def convert(self):
         self.converter.convert([self.FilesList.item(i).text() for i in range(self.FilesList.count())], self.conversion_format)
@@ -264,6 +274,24 @@ class Window(QMainWindow, Ui_MainWindow):
                 return False
         else:
             return formatted
+
+    def cleanup_download():
+        """
+        Reformat list widgets with correct metadata.
+        Clear text fields.
+        """
+        if self.player:
+            lists = {'artists': self.ArtistListWidget, 
+                     'genres': self.GenreListWidget,
+                     'albums': self.AlbumListWidget,}
+            for name, list_widget in lists.items():
+                meta = getattr(self.player, name)
+                list_widget.clear()
+                list_widget.addItems(sorted(list(meta)))
+
+        # Clear all fields except folder field
+        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
+            field.clear()
 
     def write_settings(self):
         """
