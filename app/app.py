@@ -190,6 +190,7 @@ class Window(QMainWindow, Ui_MainWindow):
                     'genre': genre,
                     'album': album,
                 }
+        # Save typed in meta if itunes need to add it to list
         new_player_meta = set()
         if self.player:
             lists = {'artist': self.ArtistListWidget, 
@@ -224,6 +225,7 @@ class Window(QMainWindow, Ui_MainWindow):
                         'path': path,
                         'filename': filename,
                         'format': self.format}
+
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
