@@ -344,7 +344,8 @@ class Window(QMainWindow, Ui_MainWindow):
         """
 
         self.write_settings()
-        self.player.disconnect()
+        if self.player:
+            self.player.disconnect()
         event.accept()
 
 
