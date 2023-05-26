@@ -12,7 +12,9 @@ class DownloadProgressThread(QThread):
 
     # These must be class variables outside the constructor
     progress = pyqtSignal(float, str, str, str)
-    done = pyqtSignal()
+    adding_to_player = pyqtSignal(str)
+    add_to_library = pyqtSignal(str)
+    add_to_playlist = pyqtSignal(list, str)
 
     def __init__(self):
         super().__init__()
@@ -28,4 +30,17 @@ class DownloadProgressThread(QThread):
             total = song.get('_total_bytes_estimate_str', song.get('_total_bytes_str', ''))
             self.progress.emit(float(song['_percent_str'][:-1]), song['_eta_str'], song['_speed_str'], total)
         else:
-            self.done.emit()
+            self.quit()
+
+    def add_to_player(self):
+        player = self.song_data['download_options']['player']
+        if not player:
+            return
+        track = os.path.join(self.song_data['path'], self.song_data['filename'] + '.' + self.song_data['format'])
+        self.adding_to_player.emit('Adding to ' + player.player.player_name + '...')
+        self.add_to_library.emit(track)
+        self.add_to_playlist.emit(self.song_data['metadata']['playlists'], track)
+        for meta_type in ('artist', 'genre', 'album'):
+            if self.song_data['metadata'][meta_type]:
+                meta = getattr(player.player, meta_type+'s')
+                meta.add(self.song_data['metadata'][meta_type])

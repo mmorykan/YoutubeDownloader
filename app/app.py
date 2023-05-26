@@ -17,10 +17,10 @@ from info import Info
 from invalid_time import InvalidTime
 from application_doesnt_exist import ApplicationDoesntExist
 from converter import Converter
+from player_connector import PlayerConnector
 from players.iTunesPlayer import iTunesPlayer
 from datetime import datetime
 import validators
-
 
 class Window(QMainWindow, Ui_MainWindow):
     """
@@ -33,7 +33,6 @@ class Window(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.progress = ProgessBar()
         self.file_exists = FileExists()
         self.url_needed = URLNeeded()
         self.info = Info()
@@ -41,6 +40,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.application_doesnt_exist = ApplicationDoesntExist()
         self.settings = QSettings("Mark Project", "Youtube Downloader")
         self.converter = Converter()
+        self.icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
+        self.downloads = []
         self.format = ''
         self.conversion_format = ''
         self.audio_boxes = (self.KeepOriginalAudioBox, self.TrimOriginalAudioBox)
@@ -54,7 +55,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.set_icons()
         self.resize_format_list()
         self.restore_settings()
-        
+
     def connect_signals_slots(self):
         self.DownloadButton.clicked.connect(self.download)
         self.ConvertButton.clicked.connect(self.convert)
@@ -77,9 +78,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.InfoButton.setIconSize(self.InfoButton.size())
 
     def set_icons(self):
-        icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
-        for dialog in (self, self.progress, self.file_exists, self.url_needed, self.info, self.invalid_time, self.application_doesnt_exist):
-            dialog.setWindowIcon(icon)
+        for dialog in (self, self.file_exists, self.url_needed, self.info, self.invalid_time, self.application_doesnt_exist):
+            dialog.setWindowIcon(self.icon)
 
     def resize_format_list(self):
         formats = YoutubeDownloader.get_supported_formats()
@@ -119,24 +119,45 @@ class Window(QMainWindow, Ui_MainWindow):
         button = box if box else self.sender()
         player_type = self.player_boxes[button]
         if checked:
-            player = player_type.connect()
-            if not player:
-                self.application_doesnt_exist.set_message(player_type.player_name)
-                self.application_doesnt_exist.exec()
-                button.setChecked(False)
-                for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
-                    listwidget.clear()
-            else:
-                self.player = player
-                self.PlaylistListWidget.addItems(player.playlists)
-                self.ArtistListWidget.addItems(sorted(list(player.artists)))
-                self.GenreListWidget.addItems(sorted(list(player.genres)))
-                self.AlbumListWidget.addItems(sorted(list(player.albums)))
+            self.player = PlayerConnector(player_type)
+            self.player.moveToThread(self.player)
+            self.player.started.connect(self.player.connect)
+            self.player.finished.connect(self.player.disconnect)
+            self.player.not_connected.connect(self.player_not_connected)
+            self.player.load_done.connect(self.load_metadata)
+            self.player.start()
         elif self.player:
-            self.player.disconnect()
+            self.player.quit()
+            self.player.wait()
             self.player = None
-            for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
+            for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget, self.PlayerLoadingLabel):
                 listwidget.clear()
+
+    def player_not_connected(self):
+        self.application_doesnt_exist.set_message(self.player.player_type.player_name)
+        self.application_doesnt_exist.exec()
+        for box, player_type in self.player_boxes.items():
+            if player_type == self.player.player_type:
+                box.setChecked(False)
+                break
+        for listwidget in (self.PlaylistListWidget, self.ArtistListWidget, self.GenreListWidget, self.AlbumListWidget):
+            listwidget.clear()
+        self.player = None
+
+    def load_metadata(self, meta_type, metadata):
+        metadata = sorted(list(metadata))
+        if meta_type == 'playlists':
+            self.PlaylistListWidget.addItems(metadata)
+            self.PlayerLoadingLabel.setText("Playlists loaded...")
+        elif meta_type == 'artists':
+            self.ArtistListWidget.addItems(metadata)
+            self.PlayerLoadingLabel.setText("Artists loaded...")
+        elif meta_type == 'genres':
+            self.GenreListWidget.addItems(metadata)
+            self.PlayerLoadingLabel.setText("Genres loaded...")
+        elif meta_type == 'albums':
+            self.AlbumListWidget.addItems(metadata)
+            self.PlayerLoadingLabel.setText("All iTunes Data loaded!")  # Albums is last data to load
 
     def change_buttons(self, is_audio_format, is_video_format):
         """
@@ -159,7 +180,7 @@ class Window(QMainWindow, Ui_MainWindow):
         end_time   = self.EndTimeText.text().strip()
         path       = self.FolderText.text()
         filename   = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
-        data       = self.progress.progress_updater.downloader.get_info(url)
+        progress, data   = self.create_progress_bar(url)
 
         if self.iTunesFormatBox.isChecked():
             if not artist:
@@ -189,9 +210,8 @@ class Window(QMainWindow, Ui_MainWindow):
                     'artist': artist,
                     'genre': genre,
                     'album': album,
+                    'playlists': [],
                 }
-        # Save typed in meta if itunes need to add it to list
-        new_player_meta = set()
         if self.player:
             lists = {'artist': self.ArtistListWidget, 
                      'genre': self.GenreListWidget,
@@ -200,11 +220,6 @@ class Window(QMainWindow, Ui_MainWindow):
                 current = list_widget.currentItem()
                 if current:
                     metadata[name] = current.text()
-                else:
-                    meta = getattr(self.player, name+'s')
-                    if metadata[name] and metadata[name] not in meta:
-                        meta.add(metadata[name])
-                        new_player_meta.add(name)
             items = self.PlaylistListWidget.selectedItems()
             metadata['playlists'] = [item.text() for item in items]
 
@@ -218,7 +233,7 @@ class Window(QMainWindow, Ui_MainWindow):
                         },
                         'download_options': {
                             'itunes_format': self.iTunesFormatBox.isChecked(),
-                            'players': [self.player],
+                            'player': self.player,
                         },
                         'start_time': start_time,
                         'end_time': end_time,
@@ -229,16 +244,19 @@ class Window(QMainWindow, Ui_MainWindow):
         if os.path.exists(os.path.join(path, filename + '.' + self.format)):  # Ask to overwrite file if it already exists
             self.file_exists.set_message(filename + '.' + self.format)
             self.file_exists.exec()
-            if self.file_exists.overwrite_file:
-                self.progress.start_download(download_info)
-            elif new_player_meta:
-                for meta_type in new_player_meta:
-                    meta = getattr(self.player, meta_type+'s')
-                    meta.remove(metadata[meta_type])
-        else:
-            self.progress.start_download(download_info)
+            if not self.file_exists.overwrite_file:
+                return
 
-        self.cleanup_download()
+        progress.start_download(download_info)
+
+    def create_progress_bar(self, url):
+        progress = ProgessBar(on_finished=self.cleanup_download)
+        progress.setWindowIcon(self.icon)
+        data = progress.progress_updater.downloader.get_info(url)
+        progress.progress_updater.add_to_library.connect(self.player.add_to_library)
+        progress.progress_updater.add_to_playlist.connect(self.player.add_to_playlists)
+        self.downloads.append(progress)
+        return progress, data
 
     def convert(self):
         self.converter.convert([self.FilesList.item(i).text() for i in range(self.FilesList.count())], self.conversion_format)
@@ -277,23 +295,25 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             return formatted
 
-    def cleanup_download(self):
+    def cleanup_download(self, progress_bar):
         """
         Reformat list widgets with correct metadata.
         Clear text fields.
         """
         if self.player:
-            lists = {'artists': self.ArtistListWidget, 
+            lists = {'artists': self.ArtistListWidget,
                      'genres': self.GenreListWidget,
                      'albums': self.AlbumListWidget,}
             for name, list_widget in lists.items():
-                meta = getattr(self.player, name)
+                meta = getattr(self.player.player, name)
                 list_widget.clear()
                 list_widget.addItems(sorted(list(meta)))
 
         # Clear all fields except folder field
         for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
             field.clear()
+
+        self.downloads.remove(progress_bar)
 
     def write_settings(self):
         """
@@ -345,7 +365,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.write_settings()
         if self.player:
-            self.player.disconnect()
+            self.player.quit()
+            self.player.wait()
         event.accept()
 
 
