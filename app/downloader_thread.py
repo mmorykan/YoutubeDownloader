@@ -11,7 +11,7 @@ class DownloadProgressThread(QThread):
     """
 
     # These must be class variables outside the constructor
-    progress = pyqtSignal(float, str, str, str)
+    progress = pyqtSignal(float, str)
     adding_to_player = pyqtSignal(str)
     add_to_library = pyqtSignal(str)
     add_to_playlist = pyqtSignal(list, str)
@@ -27,8 +27,7 @@ class DownloadProgressThread(QThread):
 
     def progress_bar(self, song):
         if song['status'] != 'finished':
-            total = song.get('_total_bytes_estimate_str', song.get('_total_bytes_str', ''))
-            self.progress.emit(float(song['_percent_str'][:-1]), song['_eta_str'], song['_speed_str'], total)
+            self.progress.emit(float(song['_percent_str'][:-1]), song['_default_template'])
         else:
             self.quit()
 

@@ -30,7 +30,8 @@ class YoutubeDownloader:
                                             'cachedir': False,
                                             'logger': Logger(),
                                             'overwrites': True,
-                                            'progress_hooks': [self.progress]
+                                            'progress_hooks': [self.progress],
+                                            'color': 'never'
                                             })
 
     def download(self, data):

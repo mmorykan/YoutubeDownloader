@@ -41,7 +41,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.settings = QSettings("Mark Project", "Youtube Downloader")
         self.converter = Converter()
         self.icon = QIcon(f':/icons/{"windows" if os.name == "nt" else "mac"}_app.jpg')
-        self.downloads = []
+        self.downloads = {}
         self.format = ''
         self.conversion_format = ''
         self.audio_boxes = (self.KeepOriginalAudioBox, self.TrimOriginalAudioBox)
@@ -249,13 +249,20 @@ class Window(QMainWindow, Ui_MainWindow):
 
         progress.start_download(download_info)
 
+        # Clear all fields except folder field once download starts
+        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
+            field.clear()
+
     def create_progress_bar(self, url):
-        progress = ProgessBar(on_finished=self.cleanup_download)
+        progress = ProgessBar()
+        progress.download_finished.connect(self.download_finished)
+        progress.window_closed.connect(self.cleanup_download)
         progress.setWindowIcon(self.icon)
         data = progress.progress_updater.downloader.get_info(url)
-        progress.progress_updater.add_to_library.connect(self.player.add_to_library)
-        progress.progress_updater.add_to_playlist.connect(self.player.add_to_playlists)
-        self.downloads.append(progress)
+        if self.player:
+            progress.progress_updater.add_to_library.connect(self.player.add_to_library)
+            progress.progress_updater.add_to_playlist.connect(self.player.add_to_playlists)
+        self.downloads[int(progress.winId())] = progress
         return progress, data
 
     def convert(self):
@@ -295,10 +302,9 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             return formatted
 
-    def cleanup_download(self, progress_bar):
+    def download_finished(self):
         """
         Reformat list widgets with correct metadata.
-        Clear text fields.
         """
         if self.player:
             lists = {'artists': self.ArtistListWidget,
@@ -309,11 +315,8 @@ class Window(QMainWindow, Ui_MainWindow):
                 list_widget.clear()
                 list_widget.addItems(sorted(list(meta)))
 
-        # Clear all fields except folder field
-        for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
-            field.clear()
-
-        self.downloads.remove(progress_bar)
+    def cleanup_download(self, progress_bar_id):
+        del self.downloads[progress_bar_id]
 
     def write_settings(self):
         """
