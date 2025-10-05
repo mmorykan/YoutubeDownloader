@@ -182,13 +182,6 @@ class Window(QMainWindow, Ui_MainWindow):
         filename   = self.FilenameText.text().split('.')[0]  # Split in case user inputs file format on end
         progress, data   = self.create_progress_bar(url)
 
-        if self.iTunesFormatBox.isChecked():
-            if not artist:
-                artist = 'Unknown Artist'
-            if not album:
-                album = 'Unknown Album'
-            path = os.path.join(path, artist, album)
-
         # Default the filename if not entered
         if not filename:
             filename = title if title else data['title']
@@ -212,6 +205,8 @@ class Window(QMainWindow, Ui_MainWindow):
                     'album': album,
                     'playlists': [],
                 }
+
+        # Update metadata if iTunes has been connected and selections are made
         if self.player:
             lists = {'artist': self.ArtistListWidget, 
                      'genre': self.GenreListWidget,
@@ -222,6 +217,14 @@ class Window(QMainWindow, Ui_MainWindow):
                     metadata[name] = current.text()
             items = self.PlaylistListWidget.selectedItems()
             metadata['playlists'] = [item.text() for item in items]
+
+        # Update the path to include artist and album
+        if self.iTunesFormatBox.isChecked():
+            if not metadata['artist']:
+                metadata['artist'] = 'Unknown Artist'
+            if not metadata['album']:
+                metadata['album'] = 'Unknown Album'
+            path = os.path.join(path, metadata['artist'], metadata['album'])
 
         download_info = {'url': url,
                         'metadata': metadata,
