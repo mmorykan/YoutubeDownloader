@@ -19,6 +19,7 @@ from application_doesnt_exist import ApplicationDoesntExist
 from converter import Converter
 from player_connector import PlayerConnector
 from players.iTunesPlayer import iTunesPlayer
+from application_updater import ApplicationUpdater
 from datetime import datetime
 import validators
 
@@ -50,6 +51,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.AddToITunesBox: iTunesPlayer,
         }
         self.player = None
+        self.application_updating = False
         self.connect_signals_slots()
         self.setup_info_button()
         self.set_icons()
@@ -117,6 +119,10 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def connect_player(self, checked, box=None):
         button = box if box else self.sender()
+        if self.application_updating:
+            self.show_update_error()
+            button.setChecked(False)
+            return
         player_type = self.player_boxes[button]
         if checked:
             self.player = PlayerConnector(player_type)
@@ -127,6 +133,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.player.load_done.connect(self.load_metadata)
             self.player.start()
         elif self.player:
+            button.setChecked(False)
             self.player.quit()
             self.player.wait()
             self.player = None
@@ -168,7 +175,22 @@ class Window(QMainWindow, Ui_MainWindow):
             audio_box.setEnabled(is_audio_format)
             video_box.setEnabled(is_video_format)
 
+    def show_update_error(self):
+        """
+        If the application is currently updating, downloads are not allowed.
+        We raise a URLNeeded dialog for now and overwrite the window title and description
+        to display an application updating error.
+        """
+        update_error_dialog = URLNeeded()
+        update_error_dialog.setWindowTitle("Application Updating")
+        update_error_dialog.InfoLabel.setText("Application must finish updating")
+        update_error_dialog.exec()
+
     def download(self):
+        if self.application_updating:
+            self.show_update_error()
+            return
+
         url = self.UrlText.text().strip()
         if not self.__is_valid_url(url):
             return
@@ -250,7 +272,7 @@ class Window(QMainWindow, Ui_MainWindow):
             if not self.file_exists.overwrite_file:
                 return
 
-        progress.start_download(download_info)
+        progress.start_download(download_info) # TODO: What do we do if the download fails, such as Unsupported URL error
 
         # Clear all fields except folder field once download starts
         for field in (self.UrlText, self.TitleText, self.ArtistText, self.GenreText, self.AlbumText, self.FilenameText, self.StartTimeText, self.EndTimeText):
@@ -321,6 +343,9 @@ class Window(QMainWindow, Ui_MainWindow):
     def cleanup_download(self, progress_bar_id):
         del self.downloads[progress_bar_id]
 
+    def update_closed(self, update_bar_id):
+        self.application_updating = False
+
     def write_settings(self):
         """
         Save all check boxes, directory, and format in QSettings.
@@ -386,4 +411,11 @@ if __name__ == "__main__":
     win = Window()
     win.setWindowTitle("Youtube Downloader")
     win.show()
+
+    win.application_updating = True
+    updater = ApplicationUpdater()
+    updater.window_closed.connect(win.update_closed)
+    updater.show()
+    updater.check_for_updates()
+
     sys.exit(app.exec())

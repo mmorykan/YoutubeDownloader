@@ -18,4 +18,8 @@ Then, to bundle this application as a .app for MacOS, run:
 
 To compile this program into a .exe for Windows, install the Windows <a href="https://ffmpeg.org/download.html#build-windows">FFmpeg</a> binaries in the root of the project directory. Then run:
 
-`python3 -m PyInstaller --onefile --windowed --icon=resource\icon.ico --add-binary="ffmpeg_windows\bin\*;." -n "Youtube Downloader" --paths=.venv\Lib\site-packages --clean app\app.py`
+`python3 -m PyInstaller --onefile --windowed --icon=resource\icon.ico --add-binary="ffmpeg_windows\bin\*;." -n "Youtube_Downloader" --paths=.venv\Lib\site-packages --clean app\app.py`
+
+The second .exe is necessary as an updater helper process to automatically update the application upon bootup if there is a more recent release on GitHub. This can be compiled with:
+
+`python3 -m PyInstaller --onefile --windowed --icon=resource\icon.ico -n "App_Updater" --paths=.venv\Lib\site-packages --clean updater/updater.py`
