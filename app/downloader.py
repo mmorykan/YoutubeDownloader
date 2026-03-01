@@ -31,7 +31,15 @@ class YoutubeDownloader:
                                             'logger': Logger(),
                                             'overwrites': True,
                                             'progress_hooks': [self.progress],
-                                            'color': 'never'
+                                            'color': 'never',
+                                            # "extractor_args": {
+                                            #     "youtube": {
+                                            #         "player_client": ["android"],
+                                            #     }
+                                            # },
+                                            # "concurrent_fragment_downloads": 1,
+                                            # "retries": 3,
+                                            # "fragment_retries": 3,
                                             })
 
     def download(self, data):
